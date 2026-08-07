@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum LeadStatus {
+  NUEVO
+  CONTACTADO
+  EN_CONVERSACION
+  PROPUESTA_ENVIADA
+  CERRADO_GANADO
+  CERRADO_PERDIDO
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  // Negocio
+  businessName String
+  industry     String
+  country      String
+
+  // Presencia
+  hasWebsite      String
+  websiteUrl      String?
+  instagramHandle String?
+
+  // Operación
+  orderChannel      String[]
+  recordKeeping     String
+  biggestTimeWaster String  @db.Text
+  weeklyHoursOnAdmin String
+  teamSize          String
+
+  // Contacto
+  fullName String
+  email    String
+  whatsapp String
+  consent  Boolean
+
+  // Atribución
+  source   String?
+  campaign String?
+
+  // Resultado
+  report Report?
+
+  // Gestión comercial
+  status LeadStatus @default(NUEVO)
+  notes  String?    @db.Text
+
+  @@index([createdAt])
+  @@index([status])
+}
+
+model Report {
+  id        String   @id @default(cuid())
+  leadId    String   @unique
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  globalScore    Int
+  scoreLabel     String
+  pillarScores   Json
+  signals        Json
+  technicalRaw   Json?
+  hoursLost      Json
+  narrative      Json
+  analysisStatus String  @default("completo")
+
+  viewCount     Int     @default(0)
+  pdfDownloaded Boolean @default(false)
+  callBooked    Boolean @default(false)
+}
+
+model FunnelEvent {
+  id        String   @id @default(cuid())
+  sessionId String
+  step      String
+  leadId    String?
+  source    String?
+  campaign  String?
+  createdAt DateTime @default(now())
+
+  @@index([step, createdAt])
+  @@index([sessionId])
+}

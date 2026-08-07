@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -iE \"^\\(sharp|jpeg-js|pngjs|jimp\\)$\")",
+      "Bash(node -e ' *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" --max-time 30 http://localhost:3000/)",
+      "Bash(cd \"C:/Users/Gerald Luciano/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/44c27ba6-a329-498f-8350-d5b52f1b310d/094c327a-aac8-4a5e-b6e0-2694438a531e/skills/ui-ux-pro-max\" && ls && ls scripts 2>/dev/null)",
+      "Read(//c/Users/Gerald Luciano/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/44c27ba6-a329-498f-8350-d5b52f1b310d/094c327a-aac8-4a5e-b6e0-2694438a531e/.claude/skills/**)",
+      "Read(//c/Users/Gerald Luciano/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/44c27ba6-a329-498f-8350-d5b52f1b310d/094c327a-aac8-4a5e-b6e0-2694438a531e/.claude/skills/ui-ux-pro-max/**)",
+      "Bash(echo \"NOT AT .claude PATH\")",
+      "Bash(find \"C:/Users/Gerald Luciano/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/44c27ba6-a329-498f-8350-d5b52f1b310d\" -name \"search.py\" -o -name \"*.csv\" 2>/dev/null | head -20)",
+      "Bash(find \"C:/Users/Gerald Luciano/AppData/Roaming/Claude\" -maxdepth 8 -name \"search.py\" -path \"*ui-ux*\" 2>/dev/null | head; echo \"---\"; find \"C:/Users/Gerald Luciano/.claude\" -maxdepth 6 -path \"*ui-ux-pro-max*\" 2>/dev/null | head -20)",
+      "Bash(cd \"C:/Users/Gerald Luciano/OneDrive - ONEMAX S.A/Desktop/DiagnosticApp-Devstudio/src/components/landing\" && sed -i -e 's/text-\\\\[#f5b301\\\\]/text-star/g' -e 's/text-muted-foreground/text-subtle/g' *.tsx && grep -rn \"f5b301\\\\|muted-foreground\" *.tsx | head)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" --max-time 45 http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} in %{time_total}s\\\\n\" --max-time 240 http://localhost:3000/)",
+      "Bash(sed -n '1,4p' copy.ts)",
+      "Bash(sed -n '228,$p' copy.ts)",
+      "Read(//tmp/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" --max-time 60 http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} en %{time_total}s\\\\n\" --max-time 90 http://localhost:3000/)"
+    ]
+  }
+}
