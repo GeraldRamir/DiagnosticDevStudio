@@ -1,8 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { copy } from "@/lib/copy";
-
-const LOGO_SRC = "/DevStudio-Content/Logo-Black.png";
+import { LOGO_SRC } from "@/lib/brand";
 
 const SocialIcons = {
   facebook: (
@@ -43,6 +42,18 @@ export function SiteFooter() {
       </p>
 
       <div className="relative mx-auto w-full max-w-[100rem]">
+        <div className="mb-10 flex justify-center lg:hidden">
+          <Link href="/" className="flex h-16 items-center">
+            <Image
+              src={LOGO_SRC}
+              alt="DevStudio"
+              width={819}
+              height={1024}
+              className="h-full w-auto object-contain"
+            />
+          </Link>
+        </div>
+
         <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-start lg:gap-16">
           <div className="grid gap-10 sm:grid-cols-3 sm:gap-8">
             {([cols.pages, cols.utility, cols.social] as const).map((col) => (
@@ -75,21 +86,18 @@ export function SiteFooter() {
             ))}
           </div>
 
-          <div className="relative mx-auto hidden h-48 w-48 shrink-0 lg:mx-0 lg:block xl:h-56 xl:w-56">
-            <div
-              className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-[#a855f7]/20 via-[#c084fc]/15 to-[#fb923c]/25"
-              aria-hidden
+          <Link
+            href="/"
+            className="relative mx-auto hidden h-28 shrink-0 items-center lg:mx-0 lg:flex xl:h-32"
+          >
+            <Image
+              src={LOGO_SRC}
+              alt="DevStudio"
+              width={819}
+              height={1024}
+              className="h-full w-auto object-contain"
             />
-            <div className="relative flex h-full items-center justify-center p-8">
-              <Image
-                src={LOGO_SRC}
-                alt="DevStudio"
-                width={160}
-                height={48}
-                className="h-auto w-full object-contain opacity-90"
-              />
-            </div>
-          </div>
+          </Link>
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-black/[0.06] pt-5 sm:flex-row">

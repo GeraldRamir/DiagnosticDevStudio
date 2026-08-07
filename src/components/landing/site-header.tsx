@@ -10,9 +10,8 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { copy } from "@/lib/copy";
+import { LOGO_SRC } from "@/lib/brand";
 import { cn } from "@/lib/utils";
-
-const LOGO_SRC = "/DevStudio-Content/Logo-Black.png";
 
 type MegaFeaturedProps = {
   label: string;
@@ -178,15 +177,16 @@ export function SiteHeader() {
       <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between gap-6 overflow-visible px-5 md:px-8 lg:px-10">
         <Link
           href="/"
-          className="relative block h-11 w-[10.5rem] shrink-0 sm:h-12 sm:w-[11.75rem]"
+          className="relative flex h-10 shrink-0 items-center sm:h-11"
         >
           <Image
             src={LOGO_SRC}
             alt="DevStudio"
-            fill
+            width={819}
+            height={1024}
             priority
-            className="object-contain object-left"
-            sizes="188px"
+            className="h-full w-auto object-contain"
+            sizes="120px"
           />
         </Link>
 

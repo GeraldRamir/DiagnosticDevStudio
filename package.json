@@ -16,6 +16,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "logo:transparent": "node scripts/remove-logo-background.mjs",
+    "logo:transparent:white": "node scripts/remove-logo-background.mjs --white",
     "postinstall": "prisma generate"
   },
   "dependencies": {

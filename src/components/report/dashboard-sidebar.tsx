@@ -16,9 +16,8 @@ import {
 } from "lucide-react";
 import type { ReportViewId } from "@/lib/report-view-model";
 import { VIEW_TITLES } from "@/lib/report-view-model";
+import { LOGO_SRC } from "@/lib/brand";
 import { cn } from "@/lib/utils";
-
-const LOGO_SRC = "/DevStudio-Content/Logo-Black.png";
 
 const MAIN_NAV: { id: ReportViewId; label: string; icon: LucideIcon }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -92,9 +91,16 @@ export function DashboardSidebar({
       )}
     >
       <div className="border-b border-[#e5e7eb] px-5 py-4">
-        <div className="flex items-center gap-2.5">
-          <div className="relative size-7">
-            <Image src={LOGO_SRC} alt="DevStudio" fill className="object-contain" sizes="28px" />
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="relative h-9 w-auto shrink-0">
+            <Image
+              src={LOGO_SRC}
+              alt="DevStudio"
+              width={819}
+              height={1024}
+              className="h-9 w-auto object-contain"
+              sizes="36px"
+            />
           </div>
           <div>
             <p className="text-sm font-semibold text-[#0f172a]">DevStudio</p>
@@ -102,7 +108,7 @@ export function DashboardSidebar({
               Diagnóstico digital
             </p>
           </div>
-        </div>
+        </Link>
       </div>
 
       <div className="px-4 py-4">
