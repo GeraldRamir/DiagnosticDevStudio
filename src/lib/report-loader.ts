@@ -15,6 +15,8 @@ export async function loadReportBySlug(slug: string) {
   if (!lead?.report) return null;
 
   const createdAt = format(lead.createdAt, "d MMM yyyy", { locale: es });
+  const createdAtDay = format(lead.createdAt, "d", { locale: es });
+  const createdAtLabel = format(lead.createdAt, "EEE, MMMM", { locale: es });
   const { technical, instagram } = unpackAnalysisRaw(lead.report.technicalRaw);
 
   return buildReportViewModel({
@@ -28,6 +30,8 @@ export async function loadReportBySlug(slug: string) {
     whatsapp: lead.whatsapp,
     slug: lead.slug,
     createdAt,
+    createdAtDay,
+    createdAtLabel,
     analysisStatus: lead.report.analysisStatus,
     viewCount: lead.report.viewCount,
     globalScore: lead.report.globalScore,

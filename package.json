@@ -15,6 +15,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
+    "reports:list": "node scripts/list-report-slugs.mjs",
     "logo:transparent": "node scripts/remove-logo-background.mjs",
     "logo:transparent:white": "node scripts/remove-logo-background.mjs --white",
     "postinstall": "prisma generate"

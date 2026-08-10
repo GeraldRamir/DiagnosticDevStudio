@@ -21,7 +21,7 @@ export function Reveal({ children, delay = 0, className }: RevealProps) {
   return (
     <div className={cn("relative", className)}>
       {!show ? (
-        <div className="absolute inset-0 animate-pulse rounded-2xl bg-[#eef2f7]" aria-hidden />
+        <div className="absolute inset-0 animate-pulse rounded-[1.375rem] bg-[#eeeeee]" aria-hidden />
       ) : null}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -54,7 +54,7 @@ export function ChartMount({ delay = 0, height, children, className }: ChartMoun
   if (!ready) {
     return (
       <div
-        className={cn("w-full animate-pulse rounded-xl bg-[#eef2f7]", className)}
+        className={cn("w-full animate-pulse rounded-xl bg-[#eeeeee]", className)}
         style={{ height }}
         aria-hidden
       />

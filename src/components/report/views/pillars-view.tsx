@@ -1,24 +1,19 @@
 "use client";
 
-import { ChartMount } from "@/components/report/reveal";
 import {
-  KpiGrid,
-  ReportPageHeader,
-  ReportSection,
-  ReportShell,
-  StatusBadge,
+  Card,
+  CardHead,
+  Chip,
+  Counter,
+  KpiRow,
+  ProgressLine,
+  StaticPill,
+  StatusDot,
+  ViewHeader,
+  pillarColor,
 } from "@/components/report/report-ui";
 import type { PillarDetail } from "@/lib/report-view-model";
 import type { HoursResult } from "@/lib/analysis/types";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
 type PillarsViewProps = {
   pillars: PillarDetail[];
@@ -27,107 +22,119 @@ type PillarsViewProps = {
 };
 
 export function PillarsView({ pillars, hours, globalScore }: PillarsViewProps) {
-  const chartData = pillars.map((p) => ({
-    name: p.label,
-    score: p.score,
-    max: p.max,
-  }));
+  const totalScore = pillars.reduce((s, p) => s + p.score, 0);
+  const totalMax = pillars.reduce((s, p) => s + p.max, 0);
+  const strongest = [...pillars].sort((a, b) => b.pct - a.pct)[0];
+  const weakest = [...pillars].filter((p) => p.max > 0).sort((a, b) => a.pct - b.pct)[0];
 
   return (
-    <div className="space-y-0">
-      <ReportShell>
-        <ReportPageHeader
-          title="Evaluación por pilares"
-          description="Desglose estructurado de madurez digital en cinco dimensiones. Cada pilar agrupa señales medidas con peso determinístico."
-          meta={`Índice global: ${globalScore}/100`}
+    <div className="space-y-3">
+      <ViewHeader
+        eyebrow="Evaluación estructurada"
+        title="Pilares de madurez digital"
+        description="Cinco dimensiones con peso determinístico. Cada pilar agrupa señales medidas de forma verificable."
+        right={<Chip tone="dark">{globalScore}/100</Chip>}
+      />
+
+      <KpiRow
+        items={[
+          { label: "Puntaje acumulado", value: `${totalScore} pt`, note: `de ${totalMax} posibles` },
+          {
+            label: "Pilar más sólido",
+            value: strongest ? `${strongest.pct}%` : "—",
+            note: strongest?.label,
+          },
+          {
+            label: "Mayor oportunidad",
+            value: weakest ? `${weakest.pct}%` : "—",
+            note: weakest?.label,
+          },
+          {
+            label: "Horas recuperables",
+            value: `${Math.round(hours.automatizable)} h`,
+            note: `de ${Math.round(hours.horasMes)} h administrativas`,
+          },
+        ]}
+      />
+
+      <Card delay={0.3}>
+        <CardHead
+          title="Cobertura por dimensión"
+          subtitle="Porcentaje alcanzado sobre el máximo del pilar"
+          right={<StaticPill label="Actual" />}
         />
+        <ul className="mt-5 space-y-4">
+          {pillars.map((pillar, i) => (
+            <li
+              key={pillar.id}
+              title={`${pillar.label}: ${pillar.pct}% del máximo`}
+              className="cursor-help rounded-lg transition-transform duration-200 hover:translate-x-1"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-semibold text-[#131313]">{pillar.label}</span>
+                <span className="text-xs font-semibold tabular-nums text-[#9a9a9a]">
+                  {pillar.score} / {pillar.max} pt
+                </span>
+              </div>
+              <ProgressLine
+                className="mt-2"
+                pct={pillar.pct}
+                color={pillarColor(i)}
+                delay={0.45 + i * 0.12}
+              />
+            </li>
+          ))}
+        </ul>
+      </Card>
 
-        <div className="space-y-6 p-6">
-          <ReportSection title="Comparativa de puntaje" subtitle="Puntaje obtenido por dimensión">
-            <ChartMount delay={100} height={280}>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 48 }}>
-                  <CartesianGrid stroke="#e5e7eb" vertical={false} />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#6b7280", fontSize: 11 }}
-                    angle={-20}
-                    textAnchor="end"
-                    height={60}
-                  />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 11 }} />
-                  <Tooltip
-                    cursor={false}
-                    contentStyle={{
-                      borderRadius: 4,
-                      border: "1px solid #d1d5db",
-                      fontSize: 12,
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-                    }}
-                  />
-                  <Bar activeBar={false} dataKey="score" fill="#1e3a5f" radius={[2, 2, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartMount>
-          </ReportSection>
-
-          <div className="grid gap-4 lg:grid-cols-2">
-            {pillars.map((pillar) => (
-              <ReportSection
-                key={pillar.id}
-                title={pillar.label}
-                subtitle={
-                  pillar.redistributed
-                    ? "Puntos redistribuidos — sin sitio web analizable"
-                    : `${pillar.pct}% del máximo del pilar`
-                }
-              >
-                <div className="flex items-baseline justify-between border-b border-[#e5e7eb] pb-3">
-                  <span className="text-3xl font-semibold tabular-nums text-[#0f172a]">
-                    {pillar.score}
-                    <span className="text-lg font-normal text-[#9ca3af]"> / {pillar.max}</span>
-                  </span>
-                </div>
-                <div className="mt-3 h-1.5 bg-[#e5e7eb]">
-                  <div className="h-full bg-[#1e3a5f]" style={{ width: `${pillar.pct}%` }} />
-                </div>
-                {pillar.signals.length > 0 ? (
-                  <ul className="mt-4 divide-y divide-[#e5e7eb]">
-                    {pillar.signals.map((s) => (
-                      <li key={s.id} className="flex items-start justify-between gap-3 py-2.5 first:pt-0">
-                        <span className="text-sm text-[#374151]">{s.label}</span>
-                        <StatusBadge
-                          status={s.status === "fail" ? "fail" : s.status === "warn" ? "warn" : "ok"}
-                          label={s.status === "fail" ? "Crítico" : s.status === "warn" ? "Alerta" : "OK"}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </ReportSection>
-            ))}
-          </div>
-
-          <ReportSection title="Impacto operativo" subtitle="Estimación basada en respuestas del cuestionario">
-            <KpiGrid
-              items={[
-                { label: "Horas admin / mes", value: `${Math.round(hours.horasMes)} h` },
-                {
-                  label: "Horas recuperables",
-                  value: `${Math.round(hours.automatizable)} h`,
-                  note: "Potencial de automatización",
-                },
-                {
-                  label: "Factores operativos",
-                  value: String(hours.desglose.factores.length),
-                },
-              ]}
+      <div className="grid gap-3 lg:grid-cols-2">
+        {pillars.map((pillar, i) => (
+          <Card key={pillar.id} className="group" delay={0.4 + i * 0.08}>
+            <CardHead
+              title={pillar.label}
+              subtitle={
+                pillar.redistributed
+                  ? "Puntos redistribuidos — sin sitio web analizable"
+                  : `${pillar.signals.length} señales medidas`
+              }
+              right={<Chip tone="accent">{pillar.pct}%</Chip>}
             />
-          </ReportSection>
-        </div>
-      </ReportShell>
+
+            <p className="mt-4 text-[2rem] font-bold leading-none tracking-tight text-[#131313]">
+              <Counter value={pillar.score} delay={0.55 + i * 0.08} />
+              <span className="text-base font-semibold text-[#c9c9c9]"> / {pillar.max}</span>
+            </p>
+            <ProgressLine
+              className="mt-3"
+              pct={pillar.pct}
+              color={pillarColor(i)}
+              delay={0.6 + i * 0.08}
+            />
+
+            {pillar.signals.length > 0 ? (
+              <ul className="mt-4 space-y-2.5">
+                {pillar.signals.map((s) => (
+                  <li
+                    key={s.id}
+                    title={s.evidence}
+                    className="-mx-2 flex cursor-help items-start gap-2.5 rounded-lg px-2 py-1 transition-colors hover:bg-[#fafafa]"
+                  >
+                    <span className="mt-1.5">
+                      <StatusDot status={s.status} />
+                    </span>
+                    <span className="min-w-0 flex-1 text-sm text-[#5c5c5c]">{s.label}</span>
+                    <span className="shrink-0 text-xs font-semibold tabular-nums text-[#b0b0b0]">
+                      {s.weight} pt
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-4 text-xs text-[#a3a3a3]">Sin señales asignadas a este pilar.</p>
+            )}
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

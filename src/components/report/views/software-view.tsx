@@ -1,11 +1,8 @@
 "use client";
 
+import { Layers } from "lucide-react";
+import { Card, CardHead, Chip, ViewHeader } from "@/components/report/report-ui";
 import type { NarrativeResult } from "@/lib/analysis/types";
-import {
-  ReportPageHeader,
-  ReportSection,
-  ReportShell,
-} from "@/components/report/report-ui";
 
 type SoftwareViewProps = {
   narrative: NarrativeResult;
@@ -13,40 +10,46 @@ type SoftwareViewProps = {
 };
 
 export function SoftwareView({ narrative, industry }: SoftwareViewProps) {
-  const { softwareRecommendations: rec } = narrative;
+  const rec = narrative.softwareRecommendations;
 
   return (
-    <ReportShell>
-      <ReportPageHeader
-        title="Recomendación de sistemas"
+    <div className="space-y-3">
+      <ViewHeader
+        eyebrow="Plan de sistemas"
+        title="Sistemas recomendados"
         description={rec.summary}
-        meta={`Sector: ${industry} · ${rec.items.length} categorías priorizadas`}
+        right={<Chip tone="dark">{rec.items.length} categorías</Chip>}
       />
 
-      <div className="divide-y divide-[#e5e7eb]">
+      <Card tone="muted" className="group flex flex-wrap items-center gap-4" delay={0.12}>
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#ee5b45] text-white transition-transform duration-300 group-hover:scale-110">
+          <Layers className="size-4" />
+        </span>
+        <p className="min-w-0 flex-1 text-sm leading-relaxed text-[#4a4a4a]">
+          Prioridades derivadas de las señales medidas para el sector <strong>{industry}</strong>.
+          No implican marcas específicas ni constituyen asesoría comercial.
+        </p>
+      </Card>
+
+      <div className="grid gap-3 lg:grid-cols-2">
         {rec.items.map((item, i) => (
-          <article key={item.category} className="px-6 py-5">
-            <div className="flex flex-wrap items-start gap-4">
-              <span className="flex size-9 shrink-0 items-center justify-center border border-[#d1d5db] bg-[#f9fafb] text-xs font-bold text-[#374151]">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-[#6b7280]">
-                  {item.category}
-                </p>
-                <h3 className="mt-1 text-base font-semibold text-[#0f172a]">{item.recommendation}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-[#4b5563]">{item.why}</p>
-              </div>
-            </div>
-          </article>
+          <Card key={item.category} className="group" delay={0.2 + i * 0.07}>
+            <CardHead
+              title={item.recommendation}
+              subtitle={item.category}
+              icon={
+                <span className="text-xs font-bold text-[#131313]">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+              }
+              right={<Chip tone="accent">Prioridad {i + 1}</Chip>}
+            />
+            <p className="mt-4 rounded-[1.125rem] bg-[#f7f7f7] p-3.5 text-sm leading-relaxed text-[#4a4a4a]">
+              {item.why}
+            </p>
+          </Card>
         ))}
       </div>
-
-      <div className="border-t border-[#e5e7eb] bg-[#f9fafb] px-6 py-4">
-        <p className="text-xs text-[#6b7280]">
-          Las recomendaciones se derivan de las señales medidas en el diagnóstico. No constituyen asesoría comercial ni implican marcas específicas.
-        </p>
-      </div>
-    </ReportShell>
+    </div>
   );
 }

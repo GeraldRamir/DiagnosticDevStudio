@@ -6,6 +6,7 @@ import type {
   ScoringResult,
   Signal,
 } from "@/lib/analysis/types";
+import { RP_SCALE } from "@/lib/report-theme";
 
 export const PILLAR_LABELS: Record<PillarId, string> = {
   presencia: "Presencia",
@@ -36,6 +37,15 @@ export type PillarSlice = {
   color: string;
 };
 
+export type PillarMeter = {
+  id: PillarId;
+  label: string;
+  score: number;
+  max: number;
+  pct: number;
+  color: string;
+};
+
 export type ActivityItem = {
   id: string;
   title: string;
@@ -53,8 +63,6 @@ export type SignalRow = {
   status: string;
   impact: string;
 };
-
-const DONUT_COLORS = ["#6366f1", "#818cf8", "#a5b4fc", "#c7d2fe", "#e0e7ff"];
 
 const PILLAR_IDS: PillarId[] = [
   "presencia",
@@ -137,15 +145,40 @@ export function buildDashboardData(
     (s, id) => s + (scores.pillars[id]?.score ?? 0),
     0,
   );
+  const totalPossible = PILLAR_IDS.reduce(
+    (s, id) => s + (scores.pillars[id]?.max ?? 0),
+    0,
+  );
+
   const pillarSlices: PillarSlice[] = PILLAR_IDS.map((id, i) => {
     const p = scores.pillars[id];
     const score = p?.score ?? 0;
     return {
       name: PILLAR_LABELS[id],
       value: totalAchieved > 0 ? Math.round((score / totalAchieved) * 100) : 20,
-      color: DONUT_COLORS[i] ?? DONUT_COLORS[0],
+      color: RP_SCALE[i] ?? RP_SCALE[0],
     };
   });
+
+  const pillarMeters: PillarMeter[] = PILLAR_IDS.map((id, i) => {
+    const p = scores.pillars[id];
+    const max = p?.max ?? 0;
+    const score = p?.score ?? 0;
+    return {
+      id,
+      label: PILLAR_LABELS[id],
+      score,
+      max,
+      pct: max > 0 ? Math.round((score / max) * 100) : 0,
+      color: RP_SCALE[i] ?? RP_SCALE[0],
+    };
+  });
+
+  /** Anillos concéntricos: mayor puntaje al exterior */
+  const rings = [...pillarMeters]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4)
+    .map((p) => ({ label: p.label, value: `${p.score} pt` }));
 
   const severityTone: Record<string, ActivityItem["tone"]> = {
     alta: "red",
@@ -186,18 +219,65 @@ export function buildDashboardData(
       impact: s.evidence.slice(0, 48) + (s.evidence.length > 48 ? "…" : ""),
     }));
 
+  const statusCounts = {
+    ok: signals.filter((s) => s.status === "ok").length,
+    warn: signals.filter((s) => s.status === "warn").length,
+    fail: signals.filter((s) => s.status === "fail").length,
+  };
+
+  const severityCounts = {
+    alta: narrative.findings.filter((f) => f.severity === "alta").length,
+    media: narrative.findings.filter((f) => f.severity === "media").length,
+    baja: narrative.findings.filter((f) => f.severity === "baja").length,
+  };
+
+  const hoursMonth = Math.round(hours.horasMes);
+  const hoursRecoverable = Math.round(hours.automatizable);
+  const recoverablePct =
+    hoursMonth > 0 ? Math.round((hoursRecoverable / hoursMonth) * 100) : 0;
+
+  /** Un punto por señal medida, con su estado real */
+  const signalDots = [...signals]
+    .sort((a, b) => b.weight - a.weight)
+    .map((s) => ({
+      label: `${s.label} (${PILLAR_LABELS[s.pillar as PillarId] ?? s.pillar})`,
+      status: s.status,
+    }));
+
+  /** Serie real de cobertura por pilar, para línea y barras */
+  const pillarPoints = pillarMeters.map((p) => ({ label: p.label, value: p.pct }));
+  const pillarBarItems = pillarMeters.map((p) => ({
+    label: p.label,
+    value: p.pct,
+    color: p.color,
+  }));
+
   return {
     businessName,
     industry,
     scoreLabel: scores.scoreLabel,
     globalScore: scores.globalScore,
     headline: narrative.headline,
+    summary: narrative.summary,
+    quickWin: narrative.quickWin,
     kpis,
     pillarBars,
     pillarSlices,
+    pillarMeters,
+    rings,
     totalAchieved,
+    totalPossible,
     activity,
     signalRows,
+    signalsTotal: signals.length,
+    statusCounts,
+    severityCounts,
+    hoursMonth,
+    hoursRecoverable,
+    recoverablePct,
+    signalDots,
+    pillarPoints,
+    pillarBarItems,
   };
 }
 

@@ -1,19 +1,23 @@
 "use client";
 
-import type { NarrativeResult } from "@/lib/analysis/types";
+import { ArrowUpRight, Sparkles } from "lucide-react";
 import {
-  ReportPageHeader,
-  ReportSection,
-  ReportShell,
-  SeverityBadge,
+  Card,
+  CardHead,
+  Chip,
+  KpiRow,
+  SeverityChip,
+  ViewHeader,
 } from "@/components/report/report-ui";
-import type { ReportMeta } from "@/lib/report-view-model";
+import type { NarrativeResult } from "@/lib/analysis/types";
+import type { ReportMeta, ReportViewId } from "@/lib/report-view-model";
 
 type ReportNarrativeViewProps = {
   narrative: NarrativeResult;
   meta: ReportMeta;
   globalScore: number;
   scoreLabel: string;
+  onNavigate: (view: ReportViewId) => void;
 };
 
 export function ReportNarrativeView({
@@ -21,59 +25,94 @@ export function ReportNarrativeView({
   meta,
   globalScore,
   scoreLabel,
+  onNavigate,
 }: ReportNarrativeViewProps) {
+  const counts = {
+    alta: narrative.findings.filter((f) => f.severity === "alta").length,
+    media: narrative.findings.filter((f) => f.severity === "media").length,
+    baja: narrative.findings.filter((f) => f.severity === "baja").length,
+  };
+
   return (
-    <ReportShell>
-      <ReportPageHeader
+    <div className="space-y-3">
+      <ViewHeader
+        eyebrow="Lectura ejecutiva"
         title={narrative.headline}
         description={narrative.summary}
-        meta={`${meta.industry} · ${meta.country} · ${globalScore}/100 (${scoreLabel}) · ${meta.createdAt} · Ref. ${meta.slug}`}
+        right={<Chip tone="dark">{globalScore}/100 · {scoreLabel}</Chip>}
       />
 
-      <div className="space-y-6 p-6">
-        <ReportSection title="Hallazgos priorizados" subtitle="Cinco observaciones ordenadas por severidad e impacto">
-          <ol className="divide-y divide-[#e5e7eb]">
-            {narrative.findings.map((f, i) => (
-              <li key={i} className="py-5 first:pt-0 last:pb-0">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="flex gap-4">
-                    <span className="flex size-8 shrink-0 items-center justify-center border border-[#d1d5db] bg-[#f9fafb] text-sm font-semibold text-[#374151]">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <div>
-                      <h4 className="font-semibold text-[#0f172a]">{f.title}</h4>
-                      <p className="mt-0.5 text-xs uppercase tracking-wide text-[#9ca3af]">{f.pillar}</p>
-                    </div>
-                  </div>
-                  <SeverityBadge severity={f.severity} />
-                </div>
-                <dl className="mt-4 grid gap-3 pl-12 sm:grid-cols-2">
-                  <div>
-                    <dt className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-[#6b7280]">
-                      Hallazgo
-                    </dt>
-                    <dd className="mt-1 text-sm leading-relaxed text-[#374151]">{f.whatWeFound}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-[#6b7280]">
-                      Implicación
-                    </dt>
-                    <dd className="mt-1 text-sm leading-relaxed text-[#374151]">{f.whyItMatters}</dd>
-                  </div>
-                </dl>
-              </li>
-            ))}
-          </ol>
-        </ReportSection>
+      <KpiRow
+        delay={0.1}
+        items={[
+          { label: "Hallazgos", value: String(narrative.findings.length), note: "priorizados por impacto" },
+          { label: "Severidad alta", value: String(counts.alta), note: "requieren acción inmediata" },
+          { label: "Severidad media", value: String(counts.media), note: "planificar a corto plazo" },
+          { label: "Severidad baja", value: String(counts.baja), note: "mejoras incrementales" },
+        ]}
+      />
 
-        <ReportSection title="Acción inmediata" subtitle="Recomendación ejecutable para esta semana">
-          <p className="text-sm leading-relaxed text-[#374151]">{narrative.quickWin}</p>
-        </ReportSection>
+      <Card
+        tone="accent"
+        className="group flex flex-wrap items-center justify-between gap-4"
+        delay={0.36}
+      >
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/20 transition-transform duration-300 group-hover:scale-110">
+            <Sparkles className="size-4" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-white/70">
+              Acción inmediata
+            </p>
+            <p className="mt-1 text-sm font-semibold leading-relaxed">{narrative.quickWin}</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => onNavigate("software")}
+          className="group/cta inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#d9452f] transition-transform duration-200 hover:-translate-y-0.5"
+        >
+          Ver sistemas
+          <ArrowUpRight className="size-4 transition-transform duration-300 group-hover/cta:rotate-45" />
+        </button>
+      </Card>
 
-        <p className="text-center text-xs text-[#9ca3af]">
-          Estado del análisis: {meta.analysisStatus} · Documento confidencial
-        </p>
+      <div className="grid gap-3 lg:grid-cols-2">
+        {narrative.findings.map((f, i) => (
+          <Card key={`${f.title}-${i}`} className="group" delay={0.44 + i * 0.07}>
+            <CardHead
+              title={f.title}
+              subtitle={f.pillar}
+              icon={
+                <span className="text-xs font-bold text-[#131313]">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+              }
+              right={<SeverityChip severity={f.severity} />}
+            />
+
+            <dl className="mt-4 space-y-3">
+              <div className="rounded-[1.125rem] bg-[#f7f7f7] p-3.5">
+                <dt className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-[#a3a3a3]">
+                  Qué encontramos
+                </dt>
+                <dd className="mt-1.5 text-sm leading-relaxed text-[#4a4a4a]">{f.whatWeFound}</dd>
+              </div>
+              <div className="rounded-[1.125rem] bg-[#f7f7f7] p-3.5">
+                <dt className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-[#a3a3a3]">
+                  Por qué importa
+                </dt>
+                <dd className="mt-1.5 text-sm leading-relaxed text-[#4a4a4a]">{f.whyItMatters}</dd>
+              </div>
+            </dl>
+          </Card>
+        ))}
       </div>
-    </ReportShell>
+
+      <p className="pb-1 text-center text-xs text-[#b0b0b0]">
+        Estado del análisis: {meta.analysisStatus} · Ref. {meta.slug} · Documento confidencial
+      </p>
+    </div>
   );
 }

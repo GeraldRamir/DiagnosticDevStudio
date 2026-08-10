@@ -2,10 +2,14 @@
 
 import { useMemo, useState } from "react";
 import {
+  Card,
+  CardHead,
+  Chip,
   DataTable,
-  ReportPageHeader,
-  ReportShell,
-  StatusBadge,
+  EmptyState,
+  SelectPill,
+  StatusChip,
+  ViewHeader,
 } from "@/components/report/report-ui";
 import type { SignalDetail } from "@/lib/report-view-model";
 import { PILLAR_LABELS } from "@/lib/report-view-model";
@@ -16,13 +20,13 @@ type SignalsViewProps = {
   query?: string;
 };
 
-const selectCls =
-  "h-9 rounded border border-[#d1d5db] bg-white px-3 text-sm text-[#374151] focus:border-[#1e3a5f] focus:outline-none focus:ring-1 focus:ring-[#1e3a5f]";
+type StatusFilter = "all" | "fail" | "warn" | "ok";
+type SortOrder = "desc" | "asc";
 
 export function SignalsView({ signals, query = "" }: SignalsViewProps) {
   const [pillarFilter, setPillarFilter] = useState<PillarId | "all">("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | "fail" | "warn" | "ok">("all");
-  const [sortDesc, setSortDesc] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
   const filtered = useMemo(() => {
     let rows = [...signals];
@@ -37,58 +41,90 @@ export function SignalsView({ signals, query = "" }: SignalsViewProps) {
           s.pillar.toLowerCase().includes(q),
       );
     }
-    rows.sort((a, b) => (sortDesc ? b.weight - a.weight : a.weight - b.weight));
+    rows.sort((a, b) => (sortOrder === "desc" ? b.weight - a.weight : a.weight - b.weight));
     return rows;
-  }, [signals, pillarFilter, statusFilter, query, sortDesc]);
+  }, [signals, pillarFilter, statusFilter, query, sortOrder]);
 
   return (
-    <ReportShell>
-      <ReportPageHeader
+    <div className="space-y-3">
+      <ViewHeader
+        eyebrow="Registro de mediciones"
         title="Matriz de señales"
-        description="Registro completo de hallazgos técnicos y operativos. Cada fila corresponde a una medición verificable del diagnóstico."
-        meta={`${filtered.length} señales registradas`}
+        description="Cada fila corresponde a una medición del diagnóstico con su evidencia y peso en el puntaje."
+        right={<Chip tone="dark">{filtered.length} de {signals.length}</Chip>}
       />
 
-      <div className="border-b border-[#e5e7eb] bg-[#f9fafb] px-6 py-3">
-        <div className="flex flex-wrap gap-2">
-          <select value={pillarFilter} onChange={(e) => setPillarFilter(e.target.value as PillarId | "all")} className={selectCls}>
-            <option value="all">Todos los pilares</option>
-            {(Object.keys(PILLAR_LABELS) as PillarId[]).map((id) => (
-              <option key={id} value={id}>{PILLAR_LABELS[id]}</option>
-            ))}
-          </select>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)} className={selectCls}>
-            <option value="all">Todos los estados</option>
-            <option value="fail">Crítico</option>
-            <option value="warn">Alerta</option>
-            <option value="ok">Conforme</option>
-          </select>
-          <button type="button" onClick={() => setSortDesc((v) => !v)} className={selectCls}>
-            Peso {sortDesc ? "↓" : "↑"}
-          </button>
-        </div>
-      </div>
+      <Card className="group" delay={0.15}>
+        <CardHead
+          title="Señales evaluadas"
+          subtitle={query.trim() ? `Filtrando por “${query.trim()}”` : "Ordenadas por peso en el puntaje"}
+          right={
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <SelectPill
+                label="Filtrar por pilar"
+                value={pillarFilter}
+                onChange={setPillarFilter}
+                options={[
+                  { value: "all" as const, label: "Todos los pilares" },
+                  ...(Object.keys(PILLAR_LABELS) as PillarId[]).map((id) => ({
+                    value: id,
+                    label: PILLAR_LABELS[id],
+                  })),
+                ]}
+              />
+              <SelectPill
+                label="Filtrar por estado"
+                value={statusFilter}
+                onChange={setStatusFilter}
+                options={[
+                  { value: "all", label: "Todos los estados" },
+                  { value: "fail", label: "Críticas" },
+                  { value: "warn", label: "Alertas" },
+                  { value: "ok", label: "Conformes" },
+                ]}
+              />
+              <SelectPill
+                label="Ordenar por peso"
+                value={sortOrder}
+                onChange={setSortOrder}
+                options={[
+                  { value: "desc", label: "Mayor peso" },
+                  { value: "asc", label: "Menor peso" },
+                ]}
+              />
+            </div>
+          }
+        />
 
-      <div className="p-6">
-        {filtered.length > 0 ? (
-          <DataTable
-            columns={["Señal", "Pilar", "Peso", "Estado", "Evidencia"]}
-            rows={filtered.map((row) => [
-              <span key="l" className="font-medium text-[#0f172a]">{row.label}</span>,
-              row.pillar,
-              <span key="w" className="font-mono text-[#0f172a]">{row.weight}</span>,
-              <StatusBadge
-                key="s"
-                status={row.status === "fail" ? "fail" : row.status === "warn" ? "warn" : "ok"}
-                label={row.statusLabel}
-              />,
-              <span key="e" className="text-xs leading-relaxed text-[#6b7280]">{row.evidence}</span>,
-            ])}
-          />
-        ) : (
-          <p className="py-12 text-center text-sm text-[#9ca3af]">No hay señales con los filtros seleccionados.</p>
-        )}
-      </div>
-    </ReportShell>
+        <div className="mt-5">
+          {filtered.length > 0 ? (
+            <DataTable
+              columns={["Señal", "Pilar", "Peso", "Estado", "Evidencia"]}
+              rows={filtered.map((row) => [
+                <span key="l" className="font-semibold text-[#131313]">
+                  {row.label}
+                </span>,
+                <span key="p" className="text-[#8a8a8a]">
+                  {row.pillar}
+                </span>,
+                <span key="w" className="font-semibold tabular-nums text-[#131313]">
+                  {row.weight}
+                </span>,
+                <StatusChip
+                  key="s"
+                  status={row.status === "fail" ? "fail" : row.status === "warn" ? "warn" : "ok"}
+                  label={row.statusLabel}
+                />,
+                <span key="e" className="text-xs leading-relaxed text-[#8a8a8a]">
+                  {row.evidence}
+                </span>,
+              ])}
+            />
+          ) : (
+            <EmptyState message="No hay señales con los filtros seleccionados." />
+          )}
+        </div>
+      </Card>
+    </div>
   );
 }

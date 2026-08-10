@@ -315,6 +315,100 @@
   mix-blend-mode: lighten;
 }
 
+/* ── Informe / dashboard de métricas ── */
+@utility rp-font {
+  font-family: var(--font-doodi), var(--font-sans), sans-serif;
+  font-feature-settings: "ss01" on;
+  -webkit-font-smoothing: antialiased;
+}
+
+@utility rp-shell-shadow {
+  box-shadow: 0 24px 70px rgba(16, 16, 16, 0.09);
+}
+
+@utility rp-card-shadow {
+  box-shadow: 0 1px 2px rgba(16, 16, 16, 0.03);
+}
+
+@utility rp-grid-bg {
+  background-image:
+    linear-gradient(to right, #f3f3f3 1px, transparent 1px),
+    linear-gradient(to bottom, #f3f3f3 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+@utility rp-card-hover {
+  transition:
+    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 16px 38px rgba(16, 16, 16, 0.1);
+    border-color: #e2e2e2;
+  }
+}
+
+/* Barrido de luz al pasar el mouse por botones */
+@utility rp-shine {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 28%,
+    rgba(255, 255, 255, 0.42) 50%,
+    transparent 72%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .rp-shine {
+  transform: translateX(130%);
+}
+
+/* Realce de fila de tabla con guía de acento */
+@utility rp-row-hover {
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    background-color: #fbfbfb;
+    box-shadow: inset 3px 0 0 #ee5b45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rp-shine {
+    transition: none;
+    opacity: 0;
+  }
+
+  .rp-card-hover:hover {
+    box-shadow: 0 1px 2px rgba(16, 16, 16, 0.03);
+  }
+}
+
+@utility rp-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d8d8d8 transparent;
+}
+
+.rp-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.rp-scrollbar::-webkit-scrollbar-thumb {
+  background: #d8d8d8;
+  border-radius: 9999px;
+}
+
+.rp-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 /* ── Doodi-style sections (below hero) ── */
 @utility doodi-page {
   font-family: var(--font-doodi), var(--font-sans), sans-serif;

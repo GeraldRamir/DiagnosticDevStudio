@@ -42,6 +42,10 @@ export type SignalDetail = {
 export type ReportMeta = {
   slug: string;
   createdAt: string;
+  /** Día del mes, para el marcador de fecha del encabezado */
+  createdAtDay: string;
+  /** Etiqueta corta "mié, agosto" */
+  createdAtLabel: string;
   analysisStatus: string;
   country: string;
   industry: string;
@@ -90,6 +94,8 @@ export function buildReportViewModel(input: {
   whatsapp: string;
   slug: string;
   createdAt: string;
+  createdAtDay?: string;
+  createdAtLabel?: string;
   analysisStatus: string;
   viewCount: number;
   globalScore: number;
@@ -164,6 +170,8 @@ export function buildReportViewModel(input: {
     meta: {
       slug: input.slug,
       createdAt: input.createdAt,
+      createdAtDay: input.createdAtDay ?? input.createdAt.split(" ")[0] ?? "—",
+      createdAtLabel: input.createdAtLabel ?? input.createdAt,
       analysisStatus: input.analysisStatus,
       country: input.country,
       industry: input.industry,
