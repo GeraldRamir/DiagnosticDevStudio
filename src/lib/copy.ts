@@ -346,14 +346,14 @@ export const copy = {
             { href: "/diagnostico", label: "Diagnóstico" },
             { href: "#que-medimos", label: "Qué medimos" },
             { href: "#como-funciona", label: "Cómo funciona" },
-            { href: "#faq", label: "FAQ" },
+            { href: "#recursos", label: "Preguntas" },
           ],
         },
         utility: {
           title: "Legal",
           links: [
             { href: "/privacidad", label: "Privacidad" },
-            { href: "#faq", label: "Preguntas frecuentes" },
+            { href: "#recursos", label: "Preguntas frecuentes" },
             { href: "#", label: "Términos de servicio" },
           ],
         },

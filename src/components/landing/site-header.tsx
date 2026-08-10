@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -7,61 +8,84 @@ import {
   ChevronDown,
   ChevronRight,
   Menu,
+  X,
 } from "lucide-react";
-import type { ReactNode } from "react";
-import { copy } from "@/lib/copy";
+import { AnimatePresence, motion } from "motion/react";
+import { LpButton } from "@/components/landing/lp-ui";
 import { LOGO_SRC } from "@/lib/brand";
+import { lp } from "@/lib/landing-copy";
 import { cn } from "@/lib/utils";
 
-type MegaFeaturedProps = {
-  label: string;
+type MenuItem = {
   title: string;
   desc: string;
-  cta: string;
   href: string;
 };
 
-function MegaFeatured({ label, title, desc, cta, href }: MegaFeaturedProps) {
+type NavMenu = {
+  label: string;
+  href: string;
+  featured: {
+    title: string;
+    desc: string;
+    cta: string;
+    href: string;
+  };
+  groups: readonly {
+    heading: string;
+    items: readonly MenuItem[];
+  }[];
+};
+
+function MegaPanel({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-col justify-between bg-gradient-to-br from-[#fef3f2] via-[#fdf4ff] to-[#fff7ed] p-6">
+    <div
+      className={cn(
+        "invisible absolute left-1/2 top-full z-[70] w-[min(42rem,calc(100vw-2rem))] -translate-x-1/2 pt-3 opacity-0",
+        "pointer-events-none transition-all duration-200",
+        "group-hover:visible group-hover:pointer-events-auto group-hover:opacity-100",
+        "group-focus-within:visible group-focus-within:pointer-events-auto group-focus-within:opacity-100",
+      )}
+    >
+      <div className="overflow-hidden rounded-[1.5rem] border border-[#efecf4] bg-white shadow-[0_24px_60px_rgba(40,20,70,0.12)]">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function FeaturedCard({
+  title,
+  desc,
+  cta,
+  href,
+}: NavMenu["featured"]) {
+  return (
+    <div className="flex h-full flex-col justify-between bg-gradient-to-br from-[#f3ecff] via-[#fff7f3] to-[#ffe9c8] p-5">
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#fb923c]">
-          {label}
+        <p className="text-[0.625rem] font-bold uppercase tracking-[0.16em] text-[#ee5b45]">
+          Destacado
         </p>
-        <h3 className="mt-2 font-display text-xl font-extrabold leading-tight text-[color:var(--landing-text)]">
+        <h3 className="lp-font mt-2 text-lg font-semibold leading-tight tracking-[-0.02em] text-[#131316]">
           {title}
         </h3>
-        <p className="mt-2 text-sm leading-relaxed text-[color:var(--landing-muted)]">
-          {desc}
-        </p>
+        <p className="mt-2 text-[0.8125rem] leading-relaxed text-[#6b6478]">{desc}</p>
       </div>
       <Link
         href={href}
-        className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#a855f7] hover:underline"
+        className="lp-font group/cta mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#131316] transition-colors hover:text-[#ee5b45]"
       >
         {cta}
-        <ChevronRight className="size-4" />
+        <ChevronRight className="size-4 transition-transform duration-300 group-hover/cta:translate-x-0.5" />
       </Link>
     </div>
   );
 }
 
-type MegaLinkItem = {
-  title: string;
-  subtitle: string;
-  href: string;
-};
-
-function MegaLinkList({
-  heading,
-  items,
-}: {
-  heading: string;
-  items: MegaLinkItem[];
-}) {
+function LinkGroup({ heading, items }: { heading: string; items: readonly MenuItem[] }) {
   return (
-    <div className="p-5">
-      <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[color:var(--landing-muted)]">
+    <div className="p-4 sm:p-5">
+      <p className="mb-2.5 text-[0.625rem] font-bold uppercase tracking-[0.16em] text-[#b6b6c0]">
         {heading}
       </p>
       <ul className="space-y-0.5">
@@ -69,17 +93,13 @@ function MegaLinkList({
           <li key={item.title}>
             <Link
               href={item.href}
-              className="group/item flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors hover:bg-black/[0.03]"
+              className="group/item flex items-start justify-between gap-2 rounded-xl px-2.5 py-2.5 transition-colors hover:bg-[#f7f4fc]"
             >
-              <div>
-                <p className="text-sm font-semibold text-[color:var(--landing-text)]">
-                  {item.title}
-                </p>
-                <p className="text-xs text-[color:var(--landing-muted)]">
-                  {item.subtitle}
-                </p>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-[#131316]">{item.title}</p>
+                <p className="text-[0.75rem] text-[#8b8b96]">{item.desc}</p>
               </div>
-              <ChevronRight className="size-4 shrink-0 text-[color:var(--landing-muted)] opacity-0 transition-opacity group-hover/item:opacity-100" />
+              <ChevronRight className="mt-0.5 size-3.5 shrink-0 text-[#c9c9d4] opacity-0 transition-opacity group-hover/item:opacity-100" />
             </Link>
           </li>
         ))}
@@ -88,97 +108,49 @@ function MegaLinkList({
   );
 }
 
-function MegaMenuPanel({ children }: { children: ReactNode }) {
+function NavDropdown({ menu }: { menu: NavMenu }) {
   return (
-    <div
-      className={cn(
-        "invisible absolute left-1/2 top-full z-[70] w-[40rem] max-w-[calc(100vw-2rem)] -translate-x-1/2 pt-3 opacity-0",
-        "transition-all duration-200",
-        "group-hover:visible group-hover:opacity-100",
-        "group-focus-within:visible group-focus-within:opacity-100",
-      )}
-    >
-      <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-[0_20px_60px_rgba(15,23,42,0.14)]">
-        {children}
-      </div>
+    <div className="group relative">
+      <Link
+        href={menu.href}
+        className="lp-font flex items-center gap-1 rounded-full px-3.5 py-2 text-sm font-medium text-[#5f5f6a] transition-colors group-hover:bg-[#f7f4fc] group-hover:text-[#131316]"
+      >
+        {menu.label}
+        <ChevronDown className="size-3.5 opacity-50 transition-transform duration-200 group-hover:rotate-180" />
+      </Link>
+
+      <MegaPanel>
+        <div className="grid grid-cols-[1.05fr_1fr_1fr] divide-x divide-[#f1eef7]">
+          <FeaturedCard {...menu.featured} />
+          {menu.groups.map((group) => (
+            <LinkGroup key={group.heading} heading={group.heading} items={group.items} />
+          ))}
+        </div>
+      </MegaPanel>
     </div>
   );
 }
 
-function MegaMenuRightPanel({ children }: { children: ReactNode }) {
-  return (
-    <div
-      className={cn(
-        "invisible absolute right-0 top-full z-[70] w-[40rem] max-w-[calc(100vw-2rem)] pt-3 opacity-0",
-        "transition-all duration-200",
-        "group-hover:visible group-hover:opacity-100",
-        "group-focus-within:visible group-focus-within:opacity-100",
-      )}
-    >
-      <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-[0_20px_60px_rgba(15,23,42,0.14)]">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function NavDropdownTrigger({ label }: { label: string }) {
-  return (
-    <button
-      type="button"
-      className="flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium text-[color:var(--landing-muted)] transition-colors group-hover:bg-black/[0.04] group-hover:text-[color:var(--landing-text)]"
-      aria-haspopup="true"
-    >
-      {label}
-      <ChevronDown className="size-3.5 opacity-50 transition-transform duration-200 group-hover:rotate-180" />
-    </button>
-  );
-}
-
-function NavLink({ href, label }: { href: string; label: string }) {
+function PlainNavLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="rounded-full px-3 py-1.5 text-sm font-medium text-[color:var(--landing-muted)] transition-colors hover:bg-black/[0.04] hover:text-[color:var(--landing-text)]"
+      className="lp-font group relative rounded-full px-3.5 py-2 text-sm font-medium text-[#5f5f6a] transition-colors hover:text-[#131316]"
     >
       {label}
+      <span className="absolute inset-x-3.5 bottom-1 h-px origin-left scale-x-0 bg-[#ee5b45] transition-transform duration-300 group-hover:scale-x-100" />
     </Link>
   );
 }
 
 export function SiteHeader() {
-  const pillars = copy.landing.headerDropdown.pillars;
-  const pillarLinks = pillars.map((p) => ({
-    title: p.name,
-    subtitle: p.desc,
-    href: "#que-medimos",
-  }));
-
-  const industryLinks = copy.landing.headerDropdown.industries.map((name) => ({
-    title: name,
-    subtitle: "Diagnóstico adaptado",
-    href: "#industrias",
-  }));
-
-  const caseLinks = copy.landing.headerDropdown.cases.map((c) => ({
-    title: c.title,
-    subtitle: c.desc,
-    href: "#casos",
-  }));
-
-  const moreLinks = copy.landing.headerDropdown.more.map((m) => ({
-    title: m.label,
-    subtitle: m.href === "#faq" ? "Preguntas frecuentes" : "Política de datos",
-    href: m.href,
-  }));
+  const [open, setOpen] = useState(false);
+  const menus = [lp.navMenus.measure, lp.navMenus.how, lp.navMenus.report];
 
   return (
-    <header className="sticky top-0 z-50 overflow-visible ds-glass border-b border-white/40">
-      <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between gap-6 overflow-visible px-5 md:px-8 lg:px-10">
-        <Link
-          href="/"
-          className="relative flex h-10 shrink-0 items-center sm:h-11"
-        >
+    <header className="relative z-50 px-[clamp(1.25rem,4vw,3.75rem)] pt-5">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6">
+        <Link href="/" className="flex h-10 shrink-0 items-center sm:h-11" aria-label="DevStudio">
           <Image
             src={LOGO_SRC}
             alt="DevStudio"
@@ -191,122 +163,86 @@ export function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-0.5 lg:flex">
-          <NavLink href="#como-funciona" label={copy.landing.nav.howItWorks} />
-
-          {/* Qué medimos — mega menu */}
-          <div className="group relative">
-            <NavDropdownTrigger label={copy.landing.nav.whatWeMeasure} />
-            <MegaMenuPanel>
-              <div className="grid grid-cols-3 divide-x divide-black/[0.06]">
-                <MegaFeatured {...copy.landing.headerDropdown.featured.pillars} />
-                <MegaLinkList
-                  heading={copy.landing.headerDropdown.visitLabel}
-                  items={pillarLinks.slice(0, 3)}
-                />
-                <MegaLinkList
-                  heading="Métricas"
-                  items={[
-                    ...pillarLinks.slice(3),
-                    {
-                      title: "Puntaje global",
-                      subtitle: "0–100 determinístico",
-                      href: "#que-medimos",
-                    },
-                  ]}
-                />
-              </div>
-            </MegaMenuPanel>
-          </div>
-
-          {/* Industrias — mega menu */}
-          <div className="group relative">
-            <NavDropdownTrigger label={copy.landing.nav.industries} />
-            <MegaMenuPanel>
-              <div className="grid grid-cols-3 divide-x divide-black/[0.06]">
-                <MegaFeatured {...copy.landing.headerDropdown.featured.industries} />
-                <MegaLinkList
-                  heading={copy.landing.headerDropdown.citiesLabel}
-                  items={industryLinks.slice(0, 3)}
-                />
-                <MegaLinkList
-                  heading="Más sectores"
-                  items={industryLinks.slice(3)}
-                />
-              </div>
-            </MegaMenuPanel>
-          </div>
-
-          <NavLink href="#reporte" label={copy.landing.nav.report} />
-
-          {/* Casos de uso — mega menu */}
-          <div className="group relative">
-            <NavDropdownTrigger label={copy.landing.nav.cases} />
-            <MegaMenuPanel>
-              <div className="grid grid-cols-3 divide-x divide-black/[0.06]">
-                <MegaFeatured {...copy.landing.headerDropdown.featured.cases} />
-                <MegaLinkList heading="Patrones" items={caseLinks} />
-                <MegaLinkList
-                  heading="Resultado"
-                  items={copy.landing.headerDropdown.stats.map((s) => ({
-                    title: s.value,
-                    subtitle: s.label,
-                    href: "#reporte",
-                  }))}
-                />
-              </div>
-            </MegaMenuPanel>
-          </div>
-
-          {/* Más — mega menu alineado a la derecha */}
-          <div className="group relative">
-            <NavDropdownTrigger label="Más" />
-            <MegaMenuRightPanel>
-              <div className="grid grid-cols-2 divide-x divide-black/[0.06]">
-                <MegaLinkList heading="Recursos" items={moreLinks} />
-                <div className="p-5">
-                  <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[color:var(--landing-muted)]">
-                    Diagnóstico
-                  </p>
-                  <p className="text-sm leading-relaxed text-[color:var(--landing-muted)]">
-                    {copy.landing.headerDropdown.tagline}
-                  </p>
-                  <Link
-                    href="/diagnostico"
-                    className="ds-glass-btn mt-4 inline-flex h-9 items-center gap-1.5 px-4 text-xs"
-                  >
-                    Empezar gratis
-                    <ArrowRight className="size-3.5" />
-                  </Link>
-                </div>
-              </div>
-            </MegaMenuRightPanel>
-          </div>
+          {menus.map((menu) => (
+            <NavDropdown key={menu.label} menu={menu} />
+          ))}
+          <PlainNavLink href="#recursos" label="Recursos" />
         </nav>
 
         <div className="flex items-center gap-2">
           <Link
-            href="/diagnostico"
-            className="ds-glass-btn hidden h-9 items-center gap-1.5 px-4 text-xs font-semibold uppercase tracking-wide sm:inline-flex"
+            href={lp.navSecondary.href}
+            className="lp-font hidden text-sm font-semibold text-[#131316] transition-colors hover:text-[#ee5b45] sm:inline-flex"
           >
-            Diagnóstico gratis
-            <ArrowRight className="size-3.5" />
+            {lp.navSecondary.label}
           </Link>
-          <Link
-            href="/diagnostico"
-            className="ds-glass-btn inline-flex size-9 items-center justify-center sm:hidden"
-            aria-label={copy.landing.ctaPrimary}
-          >
-            <ArrowRight className="size-4" />
-          </Link>
+          <LpButton href={lp.navCta.href} variant="dark" className="hidden sm:inline-flex">
+            {lp.navCta.label}
+          </LpButton>
+
           <button
             type="button"
-            className="flex size-9 items-center justify-center rounded-full text-[color:var(--landing-muted)] hover:bg-black/[0.04] lg:hidden"
-            aria-label="Menú"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={open}
+            className="flex size-10 items-center justify-center rounded-full border border-[#eae6f2] bg-white text-[#131316] transition-colors hover:border-[#c9bdea] lg:hidden"
           >
-            <Menu className="size-4" />
+            {open ? <X className="size-4" /> : <Menu className="size-4" />}
           </button>
         </div>
       </div>
+
+      <AnimatePresence>
+        {open ? (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22 }}
+            className="mx-auto mt-3 w-full max-w-6xl overflow-hidden rounded-3xl border border-[#efecf4] bg-white p-3 shadow-[0_18px_40px_rgba(60,30,90,0.10)] lg:hidden"
+          >
+            <ul className="space-y-1">
+              {[...menus.map((m) => ({ href: m.href, label: m.label })), { href: "#recursos", label: "Recursos" }].map(
+                (item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="lp-font flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-[#131316] transition-colors hover:bg-[#f6f3fb]"
+                    >
+                      {item.label}
+                      <ArrowRight className="size-4 text-[#b6b6c0]" />
+                    </Link>
+                  </li>
+                ),
+              )}
+            </ul>
+
+            <div className="mt-2 space-y-2 rounded-2xl bg-[#f7f4fc] p-3">
+              {menus[0].groups[0].items.slice(0, 3).map((item) => (
+                <Link
+                  key={item.title}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="block rounded-xl px-2 py-1.5"
+                >
+                  <p className="text-sm font-semibold text-[#131316]">{item.title}</p>
+                  <p className="text-[0.75rem] text-[#8b8b96]">{item.desc}</p>
+                </Link>
+              ))}
+            </div>
+
+            <div className="mt-2 grid gap-2 px-1 pb-1">
+              <LpButton href={lp.navCta.href} variant="dark" className="w-full">
+                {lp.navCta.label}
+              </LpButton>
+              <LpButton href={lp.navSecondary.href} variant="light" className="w-full">
+                {lp.navSecondary.label}
+              </LpButton>
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </header>
   );
 }

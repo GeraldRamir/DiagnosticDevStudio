@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Inter, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import {
+  Bricolage_Grotesque,
+  Inter,
+  JetBrains_Mono,
+  Outfit,
+  Plus_Jakarta_Sans,
+} from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -19,6 +25,12 @@ const bricolage = Bricolage_Grotesque({
   variable: "--font-display",
   subsets: ["latin"],
   weight: ["600", "800"],
+});
+
+const outfit = Outfit({
+  variable: "--font-landing",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -44,7 +56,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body
-        className={`${inter.variable} ${plusJakarta.variable} ${bricolage.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${inter.variable} ${plusJakarta.variable} ${bricolage.variable} ${outfit.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         {children}
         <Toaster richColors position="top-center" />

@@ -1,191 +1,193 @@
 "use client";
 
-import Image from "next/image";
-import { Star } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Gauge } from "@/components/brand/gauge";
-import { copy } from "@/lib/copy";
+import { motion, useReducedMotion } from "motion/react";
+import { TrendingUp } from "lucide-react";
 
-/** Posiciones 2×2 flanqueando el mockup central */
-const FLOATING_CARDS = [
-  {
-    id: "restaurante",
-    industry: "Restaurante",
-    score: 33,
-    image:
-      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=480&h=360&fit=crop&q=80",
-    style: { left: "0%", top: "12%" },
-    zIndex: 2,
-  },
-  {
-    id: "gimnasio",
-    industry: "Gimnasio",
-    score: 58,
-    image:
-      "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=480&h=360&fit=crop&q=80",
-    style: { right: "0%", top: "12%" },
-    zIndex: 2,
-  },
-  {
-    id: "clinica",
-    industry: "Clínica",
-    score: 67,
-    image:
-      "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=480&h=360&fit=crop&q=80",
-    style: { left: "-2%", top: "56%" },
-    zIndex: 3,
-  },
-  {
-    id: "retail",
-    industry: "Retail",
-    score: 45,
-    image:
-      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=480&h=360&fit=crop&q=80",
-    style: { right: "-2%", top: "56%" },
-    zIndex: 2,
-  },
-] as const;
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-export function HeroVisual() {
-  const [sampleIdx, setSampleIdx] = useState(0);
-  const sample = copy.liveSamples[sampleIdx]!;
+const PILLARS = [
+  { label: "Presencia", pct: 62, color: "#ee5b45" },
+  { label: "Rendimiento", pct: 38, color: "#f68d7c" },
+  { label: "Captación", pct: 24, color: "#fbc0b4" },
+];
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      setSampleIdx((i) => (i + 1) % copy.liveSamples.length);
-    }, 4000);
-    return () => clearInterval(id);
-  }, []);
+const FINDINGS = [
+  { title: "Sin formulario de captación", tone: "#ee5b45" },
+  { title: "Sitio lento en móvil (LCP 4.2 s)", tone: "#dd9a2b" },
+  { title: "Dominio con HTTPS activo", tone: "#1f9d6b" },
+];
+
+function ScoreRing({ score }: { score: number }) {
+  const reduce = useReducedMotion() ?? false;
+  const size = 96;
+  const stroke = 9;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const dash = (score / 100) * c;
 
   return (
-    <div className="relative mx-auto h-[26rem] w-full max-w-[36rem] sm:h-[28rem] md:max-w-[38rem] lg:h-[30rem] lg:max-w-[40rem]">
-      <svg
-        className="pointer-events-none absolute inset-0 z-[1] hidden h-full w-full sm:block"
-        viewBox="0 0 560 640"
-        preserveAspectRatio="xMidYMid meet"
-        aria-hidden
-      >
-        <path
-          d="M 72 110 Q 180 190 280 260"
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
           fill="none"
-          stroke="url(#hero-conn-grad)"
-          strokeWidth="1.5"
-          opacity="0.5"
+          stroke="rgba(255,255,255,0.15)"
+          strokeWidth={stroke}
         />
-        <path
-          d="M 488 110 Q 380 190 280 260"
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
           fill="none"
-          stroke="url(#hero-conn-grad)"
-          strokeWidth="1.5"
-          opacity="0.5"
+          stroke="#ee5b45"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={c}
+          initial={reduce ? false : { strokeDashoffset: c }}
+          animate={{ strokeDashoffset: c - dash }}
+          transition={reduce ? { duration: 0 } : { duration: 1.6, delay: 0.5, ease: EASE }}
         />
-        <path
-          d="M 56 420 Q 168 360 280 320"
-          fill="none"
-          stroke="url(#hero-conn-grad)"
-          strokeWidth="1.5"
-          opacity="0.45"
-        />
-        <path
-          d="M 504 420 Q 392 360 280 320"
-          fill="none"
-          stroke="url(#hero-conn-grad)"
-          strokeWidth="1.5"
-          opacity="0.45"
-        />
-        <circle cx="200" cy="210" r="5" fill="url(#hero-conn-grad)" opacity="0.85" />
-        <defs>
-          <linearGradient id="hero-conn-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#e879f9" />
-            <stop offset="100%" stopColor="#fb923c" />
-          </linearGradient>
-        </defs>
       </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-xl font-bold leading-none text-white">{score}</span>
+        <span className="mt-1 text-[0.5625rem] font-medium uppercase tracking-[0.14em] text-white/50">
+          de 100
+        </span>
+      </div>
+    </div>
+  );
+}
 
-      {FLOATING_CARDS.map((card) => (
-        <article
-          key={card.id}
-          className="absolute hidden w-[8.5rem] overflow-hidden rounded-2xl border border-white/70 bg-white/85 p-1.5 shadow-[0_16px_48px_rgba(15,23,42,0.14)] backdrop-blur-sm sm:block md:w-[9.5rem] lg:w-[10.5rem]"
-          style={{ ...card.style, zIndex: card.zIndex }}
-        >
-          <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-            <Image
-              src={card.image}
-              alt={card.industry}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 136px, 168px"
-            />
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-2 pb-2 pt-8">
-              <p className="truncate text-[11px] font-semibold text-white">
-                {card.industry}
+export function HeroVisual() {
+  const reduce = useReducedMotion() ?? false;
+
+  return (
+    <div className="relative mx-auto w-full max-w-[560px]">
+      {/* Halo de color detrás del dispositivo */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[340px] w-[340px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-80 blur-[60px]"
+        style={{
+          background: "radial-gradient(circle, #e6d4fb 0%, #fbe0d6 55%, transparent 72%)",
+        }}
+      />
+
+      <motion.div
+        initial={reduce ? false : { opacity: 0, y: 40, scale: 0.94 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={reduce ? { duration: 0 } : { duration: 0.9, delay: 0.15, ease: EASE }}
+        className="relative mx-auto w-[268px]"
+      >
+        {/* Marco del dispositivo */}
+        <div className="rounded-[2.25rem] border-[7px] border-[#111111] bg-[#111111] shadow-[0_30px_60px_rgba(40,20,70,0.28)]">
+          <div className="overflow-hidden rounded-[1.75rem] bg-[#101010]">
+            <div className="flex items-center justify-between px-5 pt-4">
+              <span className="text-[0.625rem] font-semibold text-white/50">Reporte</span>
+              <span className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[0.5625rem] font-semibold text-white/70">
+                <span className="size-1.5 rounded-full bg-[#1f9d6b]" />
+                En vivo
+              </span>
+            </div>
+
+            <div className="flex flex-col items-center px-5 pb-5 pt-3">
+              <ScoreRing score={41} />
+              <p className="mt-3 text-[0.8125rem] font-semibold text-white">Restaurante La Esquina</p>
+              <p className="text-[0.625rem] text-white/45">Restaurante · México</p>
+            </div>
+
+            <div className="rounded-t-[1.5rem] bg-white px-5 pb-5 pt-4">
+              <p className="text-[0.5625rem] font-semibold uppercase tracking-[0.16em] text-[#b6b6c0]">
+                Pilares
               </p>
-              <p className="ds-mono-num font-mono text-[10px] text-white/85">
-                {card.score}/100
+              <ul className="mt-3 space-y-2.5">
+                {PILLARS.map((p, i) => (
+                  <li key={p.label}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[0.6875rem] font-medium text-[#4d4d55]">{p.label}</span>
+                      <span className="text-[0.6875rem] font-semibold tabular-nums text-[#131316]">
+                        {p.pct}%
+                      </span>
+                    </div>
+                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#f1eef7]">
+                      <motion.div
+                        initial={reduce ? false : { width: 0 }}
+                        animate={{ width: `${p.pct}%` }}
+                        transition={
+                          reduce
+                            ? { duration: 0 }
+                            : { duration: 1.1, delay: 0.8 + i * 0.15, ease: EASE }
+                        }
+                        className="h-full rounded-full"
+                        style={{ backgroundColor: p.color }}
+                      />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              <p className="mt-4 text-[0.5625rem] font-semibold uppercase tracking-[0.16em] text-[#b6b6c0]">
+                Hallazgos
               </p>
+              <ul className="mt-2 space-y-1.5">
+                {FINDINGS.map((f, i) => (
+                  <motion.li
+                    key={f.title}
+                    initial={reduce ? false : { opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={
+                      reduce ? { duration: 0 } : { duration: 0.5, delay: 1.2 + i * 0.12 }
+                    }
+                    className="flex items-center gap-2 rounded-xl bg-[#f8f6fc] px-2.5 py-2"
+                  >
+                    <span
+                      className="size-1.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: f.tone }}
+                    />
+                    <span className="truncate text-[0.625rem] font-medium text-[#4d4d55]">
+                      {f.title}
+                    </span>
+                  </motion.li>
+                ))}
+              </ul>
             </div>
           </div>
-        </article>
-      ))}
+        </div>
+      </motion.div>
 
-      <div
-        className="absolute z-20 flex items-center gap-1.5 rounded-full border border-white/60 bg-white/75 px-3 py-1.5 text-xs font-medium shadow-[0_4px_20px_rgba(15,23,42,0.08)] backdrop-blur-md"
-        style={{ right: "22%", top: "4%" }}
+      {/* Señales flotantes a los lados del dispositivo */}
+      <motion.div
+        initial={reduce ? false : { opacity: 0, x: 24 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={reduce ? { duration: 0 } : { duration: 0.7, delay: 1.1, ease: EASE }}
+        className="absolute right-0 top-[28%] hidden w-[168px] space-y-2 sm:block"
       >
-        <Star className="size-3 fill-amber-400 text-amber-400" />
-        <span className="ds-mono-num font-mono font-semibold text-[color:var(--landing-text)]">
-          5.0
-        </span>
-        <span className="text-[color:var(--landing-muted)]">/5.0</span>
-      </div>
+        {[
+          { label: "Velocidad móvil", value: "38" },
+          { label: "Captación", value: "24" },
+          { label: "Datos", value: "12" },
+        ].map((s, i) => (
+          <div
+            key={s.label}
+            className="flex items-center justify-between rounded-full bg-white/95 px-3 py-2 shadow-[0_8px_20px_rgba(60,30,90,0.10)] backdrop-blur"
+            style={{ marginLeft: i * 12 }}
+          >
+            <span className="text-[0.625rem] font-medium text-[#7b7b87]">{s.label}</span>
+            <span className="text-[0.6875rem] font-bold tabular-nums text-[#131316]">{s.value}</span>
+          </div>
+        ))}
+      </motion.div>
 
-      <div
-        className="absolute left-1/2 z-10 w-[12rem] -translate-x-1/2 rounded-[1.75rem] border border-black/[0.06] bg-white p-4 shadow-[0_24px_64px_rgba(15,23,42,0.14)] sm:w-[13rem] sm:p-5 lg:w-[14rem]"
-        style={{ top: "8%" }}
+      <motion.div
+        initial={reduce ? false : { opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={reduce ? { duration: 0 } : { duration: 0.7, delay: 1.4, ease: EASE }}
+        className="lp-float absolute -right-1 bottom-6 hidden items-center gap-2 rounded-2xl bg-[#111111] px-3.5 py-2.5 text-white shadow-[0_14px_34px_rgba(20,10,40,0.28)] sm:flex"
       >
-        <div className="text-center">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[color:var(--landing-muted)]">
-            Diagnóstico en vivo
-          </p>
-          <h3 className="mt-0.5 font-display text-sm font-bold tracking-tight text-[color:var(--landing-text)] lg:text-base">
-            {copy.landing.mockupTitle}
-          </h3>
-        </div>
-
-        <div className="mt-3 flex justify-center">
-          <Gauge
-            value={sample.score}
-            label={sample.industry}
-            sublabel={sample.country}
-            size={160}
-            animate
-          />
-        </div>
-
-        <div className="mt-2 space-y-1.5 px-1">
-          {[
-            { label: "Presencia", w: 88 },
-            { label: "Operación", w: 62 },
-            { label: "Captación", w: 45 },
-          ].map((bar) => (
-            <div key={bar.label} className="flex items-center gap-1.5">
-              <span className="w-12 shrink-0 text-[8px] text-[color:var(--landing-muted)]">
-                {bar.label}
-              </span>
-              <div className="h-1 flex-1 overflow-hidden rounded-full bg-black/[0.06]">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-[#a855f7] to-[#fb923c]"
-                  style={{ width: `${bar.w}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <p className="ds-mono-num mt-3 text-center font-mono text-[9px] text-[color:var(--landing-muted)] transition-opacity duration-500">
-          {sample.industry} · {sample.country}
-        </p>
-      </div>
+        <TrendingUp className="size-3.5 text-[#ee5b45]" />
+        <span className="text-[0.6875rem] font-semibold">+18 pts potenciales</span>
+      </motion.div>
     </div>
   );
 }

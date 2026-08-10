@@ -548,6 +548,66 @@
   transition: background-color 0.2s ease;
 }
 
+/* ── Landing promocional (hoja blanca sobre fondo lila) ── */
+@utility lp-font {
+  font-family: var(--font-landing), var(--font-sans), sans-serif;
+  font-feature-settings: "ss01";
+}
+
+@utility lp-page {
+  background: #ffffff;
+}
+
+@utility lp-sheet {
+  background: #ffffff;
+}
+
+@utility lp-card-hover {
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 50px rgba(60, 30, 90, 0.12);
+  }
+}
+
+@utility lp-dotted {
+  background-image: radial-gradient(rgba(19, 19, 22, 0.14) 1px, transparent 1px);
+  background-size: 12px 12px;
+}
+
+@keyframes lp-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@utility lp-float {
+  animation: lp-float 6s ease-in-out infinite;
+}
+
+@utility lp-float-slow {
+  animation: lp-float 8s ease-in-out infinite;
+  animation-delay: -2.5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-float,
+  .lp-float-slow {
+    animation: none;
+  }
+
+  .lp-card-hover:hover {
+    transform: none;
+  }
+}
+
 /* ── Logo marquee ── */
 @keyframes ds-orb-drift {
   0%,
