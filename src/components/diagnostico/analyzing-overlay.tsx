@@ -11,7 +11,7 @@ export function AnalyzingOverlay() {
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[100] flex items-center justify-center bg-[#f3f4f8]/90 backdrop-blur-sm"
     >
-      <div className="w-full max-w-md rounded-2xl border border-[#e8ebf0] bg-white p-8 text-center shadow-[0_24px_64px_rgba(15,23,42,0.12)]">
+      <div className="mx-4 w-full max-w-md rounded-2xl border border-[#e8ebf0] bg-white p-6 text-center shadow-[0_24px_64px_rgba(15,23,42,0.12)] sm:p-8">
         <Loader2 className="mx-auto size-8 animate-spin text-[#6366f1]" />
         <p className="mt-4 text-lg font-semibold text-[#111827]">Generando diagnóstico</p>
         <p className="mt-2 text-sm text-[#64748b]">

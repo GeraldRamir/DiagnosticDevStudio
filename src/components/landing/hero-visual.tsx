@@ -64,11 +64,11 @@ export function HeroVisual() {
   const reduce = useReducedMotion() ?? false;
 
   return (
-    <div className="relative mx-auto w-full max-w-[560px]">
+    <div className="relative mx-auto w-full max-w-[560px] overflow-x-clip">
       {/* Halo de color detrás del dispositivo */}
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[340px] w-[340px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-80 blur-[60px]"
+        className="pointer-events-none absolute left-1/2 top-1/2 -z-10 size-[min(340px,80vw)] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-80 blur-[60px]"
         style={{
           background: "radial-gradient(circle, #e6d4fb 0%, #fbe0d6 55%, transparent 72%)",
         }}
@@ -78,7 +78,7 @@ export function HeroVisual() {
         initial={reduce ? false : { opacity: 0, y: 40, scale: 0.94 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={reduce ? { duration: 0 } : { duration: 0.9, delay: 0.15, ease: EASE }}
-        className="relative mx-auto w-[268px]"
+        className="relative mx-auto w-[min(268px,100%)]"
       >
         {/* Marco del dispositivo */}
         <div className="rounded-[2.25rem] border-[7px] border-[#111111] bg-[#111111] shadow-[0_30px_60px_rgba(40,20,70,0.28)]">

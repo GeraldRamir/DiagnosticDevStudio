@@ -133,11 +133,19 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
-    @apply font-sans scroll-smooth;
+    @apply font-sans scroll-smooth overflow-x-clip;
+    max-width: 100%;
+  }
+  body {
+    @apply bg-background text-foreground overflow-x-clip;
+    max-width: 100%;
+    min-width: 0;
+  }
+  html.nav-open,
+  html.nav-open body {
+    overflow: hidden;
+    touch-action: none;
   }
 }
 

@@ -149,6 +149,38 @@ const BLOCKS: Record<string, Block> = {
     severity: "media",
     pillar: "Captación",
   },
+  "captacion.ig_recency": {
+    title: "Instagram sin publicación reciente",
+    whatWeFound: "{evidence}.",
+    whyItMatters:
+      "El algoritmo y los clientes locales premian cuentas que se ven vivas. Un perfil quieto deja de aparecer.",
+    severity: "media",
+    pillar: "Captación",
+  },
+  "captacion.ig_engagement": {
+    title: "Bajo engagement en Instagram",
+    whatWeFound: "{evidence}.",
+    whyItMatters:
+      "Pocos likes y comentarios por post indican que el contenido no está convirtiendo atención en conversación.",
+    severity: "media",
+    pillar: "Captación",
+  },
+  "captacion.ig_oauth": {
+    title: "Instagram no conectado",
+    whatWeFound: "{evidence}.",
+    whyItMatters:
+      "Sin autorización no se pueden leer alcance e impresiones reales del perfil.",
+    severity: "baja",
+    pillar: "Captación",
+  },
+  "captacion.ig_reach": {
+    title: "Alcance orgánico limitado",
+    whatWeFound: "{evidence}.",
+    whyItMatters:
+      "Si pocas cuentas ven el contenido, el perfil no está generando demanda nueva.",
+    severity: "media",
+    pillar: "Captación",
+  },
   "captacion.ig_bio_link": {
     title: "Sin link en biografía",
     whatWeFound: "{evidence}.",

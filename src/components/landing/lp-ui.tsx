@@ -113,7 +113,7 @@ export function LpButton({
 
   if (isInternal) {
     return (
-      <motion.span {...motionProps} className="inline-flex">
+      <motion.span {...motionProps} className={cn("inline-flex max-w-full", className?.includes("w-full") && "w-full")}>
         <Link href={href} className={cls}>
           {inner}
         </Link>
@@ -122,7 +122,13 @@ export function LpButton({
   }
 
   return (
-    <motion.a href={href} className={cls} {...motionProps}>
+    <motion.a
+      href={href}
+      className={cls}
+      target={href.startsWith("http") ? "_blank" : undefined}
+      rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
+      {...motionProps}
+    >
       {inner}
     </motion.a>
   );

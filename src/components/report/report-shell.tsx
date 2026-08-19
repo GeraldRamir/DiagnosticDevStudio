@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useState, type ReactNode, type RefObject } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -70,6 +70,15 @@ export function ReportShell({
   const reduce = useReducedMotion() ?? false;
   const initials = businessName.slice(0, 2).toUpperCase();
 
+  useEffect(() => {
+    document.documentElement.classList.toggle("nav-open", drawerOpen);
+    document.body.style.overflow = drawerOpen ? "hidden" : "";
+    return () => {
+      document.documentElement.classList.remove("nav-open");
+      document.body.style.overflow = "";
+    };
+  }, [drawerOpen]);
+
   const go = (view: ReportViewId) => {
     onNavigate(view);
     setDrawerOpen(false);
@@ -77,7 +86,7 @@ export function ReportShell({
 
   return (
     <div className="rp-font min-h-screen bg-[#e8e8e8] p-2 sm:p-4 lg:p-6">
-      <div className="rp-shell-shadow mx-auto w-full max-w-[104rem] overflow-hidden rounded-[1.5rem] bg-[#f5f5f5] sm:rounded-[2rem]">
+      <div className="rp-shell-shadow mx-auto w-full max-w-[104rem] overflow-hidden rounded-[1.25rem] bg-[#f5f5f5] sm:rounded-[2rem]">
         {/* ── Banda superior ── */}
         <div className="bg-[#f0f0f0] px-3 pb-5 pt-3 sm:px-6 sm:pt-5">
           <motion.div
@@ -132,7 +141,7 @@ export function ReportShell({
               </div>
             </div>
 
-            <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:flex-none">
+            <div className="flex w-full min-w-0 items-center justify-end gap-2 sm:w-auto sm:flex-none">
               <CircleButton label="Buscar señales" variant="light" size="sm">
                 <Search className="size-4" />
               </CircleButton>
@@ -284,20 +293,28 @@ export function ReportShell({
             className="fixed inset-0 z-40 bg-black/35"
             onClick={() => setDrawerOpen(false)}
           />
-          <aside className="rp-font fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col bg-white p-5 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
+          <aside
+            className="rp-font fixed inset-y-0 left-0 z-50 flex h-dvh w-[min(20rem,calc(100%-3.25rem))] flex-col overflow-x-hidden overflow-y-auto overscroll-contain bg-white shadow-2xl"
+            style={{
+              paddingTop: "max(1.25rem, env(safe-area-inset-top))",
+              paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))",
+              paddingLeft: "max(1.25rem, env(safe-area-inset-left))",
+              paddingRight: "1.25rem",
+            }}
+          >
+            <div className="flex min-w-0 items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2.5">
                 <Image
                   src={LOGO_SRC}
                   alt="DevStudio"
                   width={819}
                   height={1024}
-                  className="size-8 object-contain"
+                  className="size-8 shrink-0 object-contain"
                   sizes="32px"
                 />
-                <div className="leading-tight">
-                  <p className="text-sm font-bold text-[#131313]">{businessName}</p>
-                  <p className="text-xs text-[#a3a3a3]">{industry}</p>
+                <div className="min-w-0 leading-tight">
+                  <p className="truncate text-sm font-bold text-[#131313]">{businessName}</p>
+                  <p className="truncate text-xs text-[#a3a3a3]">{industry}</p>
                 </div>
               </div>
               <CircleButton
@@ -320,7 +337,7 @@ export function ReportShell({
                     "flex w-full items-center justify-between rounded-full px-4 py-2.5 text-left text-sm font-semibold transition-all duration-200",
                     activeView === tab.id
                       ? "bg-[#101010] text-white"
-                      : "text-[#5c5c5c] hover:translate-x-1 hover:bg-[#fdeeeb] hover:text-[#d9452f]",
+                      : "text-[#5c5c5c] hover:bg-[#fdeeeb] hover:text-[#d9452f]",
                   )}
                 >
                   {tab.label}

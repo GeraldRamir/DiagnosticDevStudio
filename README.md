@@ -28,6 +28,21 @@ Ver `.env.example`. Requiere:
 - `GEMINI_API_KEY`, `PAGESPEED_API_KEY`, `RESEND_API_KEY`
 - `ADMIN_PASSWORD`, `NEXT_PUBLIC_APP_URL`
 
+## Instagram
+
+El feed de `@dev_studioo` en la landing usa Instagram Login (`INSTAGRAM_ACCESS_TOKEN`) vía `/api/instagram/feed`. El webhook de DMs está en `/api/instagram/webhook`.
+
+En Meta App Dashboard:
+
+1. Pega `INSTAGRAM_VERIFY_TOKEN` como Verify Token
+2. Callback URL pública: `https://TU-DOMINIO/api/instagram/webhook`
+3. Suscribe Instagram a `messages` y `comments`
+4. OAuth del lead: redirect `https://TU-DOMINIO/api/instagram/oauth/callback` con `INSTAGRAM_APP_ID`
+
+Panel interno: `/admin/instagram` (usa `ADMIN_PASSWORD`).
+
+El análisis del handle sigue midiendo perfiles públicos. Si el lead conecta Instagram, el reporte usa insights reales (alcance, impresiones).
+
 ## Scripts
 
 | Comando | Descripción |

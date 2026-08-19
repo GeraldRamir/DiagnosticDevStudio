@@ -20,6 +20,6 @@ export {
   parseHtmlMetrics,
   type PagespeedResponse,
 } from "./technical";
-export { analyzeInstagram, formatInstagramEvidence } from "./instagram";
+export { analyzeInstagram, formatInstagramEvidence, summarizeMedia } from "./instagram";
 export { runDiagnostic } from "./run-diagnostic";
 export type * from "./types";

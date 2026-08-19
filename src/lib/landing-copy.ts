@@ -228,6 +228,18 @@ export const lp = {
     link: { label: "Leer la política de privacidad", href: "/privacidad" },
   },
 
+  instagram: {
+    badge: "Instagram",
+    title: "El estudio, en movimiento",
+    subtitle: "Trabajo real publicado en @dev_studioo.",
+    subtitleFollowers: "{count} seguidores · lo último en @dev_studioo.",
+    cta: "Seguir @dev_studioo",
+    magnet: "Comenta DIAGNOSTICO en un post y te enviamos el reporte por DM.",
+    photo: "Foto",
+    reel: "Reel",
+    carousel: "Carrusel",
+  },
+
   finalCta: {
     title: "Descubre el puntaje de tu negocio hoy",
     subtitle: "Gratis, sin tarjeta y con reporte al instante.",

@@ -10,6 +10,7 @@ import type {
   TechnicalMetrics,
   InstagramMetrics,
 } from "./types";
+import { daysSinceIso } from "./instagram";
 
 export type ScoringInput = {
   form: Pick<
@@ -285,6 +286,56 @@ function buildCaptacion(
           : "Publicaciones no disponibles",
       pillar: "captacion",
     });
+
+    const days = daysSinceIso(instagram.lastPostAt);
+    if (days != null) {
+      signals.push({
+        id: "captacion.ig_recency",
+        label: "Frecuencia de publicación",
+        status: days <= 14 ? "ok" : days <= 45 ? "warn" : "fail",
+        weight: 3,
+        evidence:
+          days === 0
+            ? "Último post publicado hoy"
+            : `Último post hace ${days} día${days === 1 ? "" : "s"}`,
+        pillar: "captacion",
+      });
+    }
+
+    if (instagram.avgLikes != null && instagram.followers && instagram.followers > 0) {
+      const rate =
+        ((instagram.avgLikes + (instagram.avgComments ?? 0)) / instagram.followers) * 100;
+      signals.push({
+        id: "captacion.ig_engagement",
+        label: "Engagement reciente",
+        status: rate >= 2 ? "ok" : rate >= 0.5 ? "warn" : "fail",
+        weight: 3,
+        evidence: `~${rate.toFixed(1)}% de engagement en ${instagram.recentSampleSize ?? "posts"} recientes`,
+        pillar: "captacion",
+      });
+    }
+
+    if (instagram.oauthConnected) {
+      signals.push({
+        id: "captacion.ig_oauth",
+        label: "Instagram conectado",
+        status: "ok",
+        weight: 2,
+        evidence: `@${instagram.username} autorizó insights reales`,
+        pillar: "captacion",
+      });
+    }
+
+    if (instagram.reach7d != null) {
+      signals.push({
+        id: "captacion.ig_reach",
+        label: "Alcance reciente",
+        status: instagram.reach7d >= 500 ? "ok" : instagram.reach7d >= 100 ? "warn" : "fail",
+        weight: 3,
+        evidence: `${instagram.reach7d.toLocaleString("es")} cuentas alcanzadas (periodo reciente)`,
+        pillar: "captacion",
+      });
+    }
 
     signals.push({
       id: "captacion.ig_bio_link",

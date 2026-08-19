@@ -438,7 +438,11 @@ export const copy = {
       websiteUrl: { label: "URL del sitio web", placeholder: "https://tunegocio.com" },
       instagramHandle: {
         label: "Instagram",
-        placeholder: "@tunegocio — analizamos seguidores, posts y bio",
+        placeholder: "@tunegocio — o conecta la cuenta para insights reales",
+        connect: "Conectar Instagram (Business/Creator)",
+        connected: "Conectado @{username}",
+        hint: "Opcional. Si conectas, medimos alcance e impresiones reales, no solo el perfil público.",
+        error: "No se pudo conectar Instagram. Puedes seguir con el @.",
       },
       orderChannel: { label: "Canales de pedidos / contacto", hint: "Selecciona todos los que apliquen" },
       biggestTimeWaster: {

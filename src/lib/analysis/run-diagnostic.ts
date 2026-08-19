@@ -5,6 +5,7 @@ import {
   generateNarrative,
 } from "@/lib/analysis";
 import { analyzeInstagram } from "@/lib/analysis/instagram";
+import { readLeadSnapshot } from "@/lib/instagram/oauth";
 import type { DiagnosticInput } from "@/lib/analysis/types";
 import type { DiagnosticFormValues } from "@/lib/form-schema";
 import { toDiagnosticInput } from "@/lib/form-schema";
@@ -51,6 +52,19 @@ export async function runDiagnostic(values: DiagnosticFormValues) {
   }
 
   await Promise.all(analysisJobs);
+
+  const oauthSnapshot = await readLeadSnapshot();
+  if (oauthSnapshot?.found) {
+    instagram = {
+      ...(instagram ?? {}),
+      ...oauthSnapshot,
+      found: true,
+    };
+    instagramRaw = oauthSnapshot;
+    if (!input.instagramHandle?.trim()) {
+      input.instagramHandle = `@${oauthSnapshot.username}`;
+    }
+  }
 
   const scores = calculateScores({
     form: {

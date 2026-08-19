@@ -34,7 +34,7 @@ function FeatureBlock({
     <Reveal>
       <div
         className={cn(
-          "grid items-center gap-8 rounded-[clamp(1.5rem,2.6vw,2.25rem)] p-[clamp(1.5rem,3vw,3rem)] lg:grid-cols-2",
+          "grid items-center gap-8 overflow-x-clip rounded-[clamp(1.5rem,2.6vw,2.25rem)] p-[clamp(1.25rem,3vw,3rem)] lg:grid-cols-2",
           tone === "lilac" ? "bg-[#ece2fd]" : "bg-[#ffe89a]",
         )}
       >

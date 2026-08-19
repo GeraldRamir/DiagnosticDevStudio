@@ -163,6 +163,10 @@ describe("FALLBACK_BLOCK_IDS", () => {
       "rendimiento.viewport",
       "rendimiento.na",
       "captacion.instagram",
+      "captacion.ig_recency",
+      "captacion.ig_engagement",
+      "captacion.ig_oauth",
+      "captacion.ig_reach",
       "captacion.whatsapp",
       "captacion.form",
       "captacion.og",
@@ -181,6 +185,6 @@ describe("FALLBACK_BLOCK_IDS", () => {
     for (const id of expectedIds) {
       expect(FALLBACK_BLOCK_IDS).toContain(id);
     }
-    expect(FALLBACK_BLOCK_IDS).toHaveLength(28);
+    expect(FALLBACK_BLOCK_IDS).toHaveLength(32);
   });
 });

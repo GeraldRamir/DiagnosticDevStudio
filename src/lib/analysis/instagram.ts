@@ -1,7 +1,17 @@
+import { discoverBusiness } from "@/lib/instagram/graph";
 import type { InstagramMetrics } from "./types";
 
 const TIMEOUT_MS = 20_000;
 const IG_APP_ID = "936619743392459";
+
+type IgMediaNode = {
+  taken_at_timestamp?: number;
+  is_video?: boolean;
+  __typename?: string;
+  edge_liked_by?: { count?: number };
+  edge_media_preview_like?: { count?: number };
+  edge_media_to_comment?: { count?: number };
+};
 
 type IgApiUser = {
   username?: string;
@@ -11,7 +21,10 @@ type IgApiUser = {
   is_business_account?: boolean;
   edge_followed_by?: { count?: number };
   edge_follow?: { count?: number };
-  edge_owner_to_timeline_media?: { count?: number };
+  edge_owner_to_timeline_media?: {
+    count?: number;
+    edges?: Array<{ node?: IgMediaNode }>;
+  };
   profile_pic_url_hd?: string;
 };
 
@@ -20,7 +33,7 @@ type IgApiResponse = {
   status?: string;
 };
 
-function normalizeUsername(handle: string): string {
+export function normalizeInstagramUsername(handle: string): string {
   return handle.trim().replace(/^@+/, "").split("/")[0]?.toLowerCase() ?? "";
 }
 
@@ -36,6 +49,13 @@ function emptyMetrics(username: string, partial: Partial<InstagramMetrics> = {})
     biography: null,
     externalUrl: null,
     profilePicUrl: null,
+    lastPostAt: null,
+    postsLast30Days: null,
+    avgLikes: null,
+    avgComments: null,
+    hasReels: null,
+    recentSampleSize: null,
+    source: null,
     fetchedAt: new Date().toISOString(),
     ...partial,
   };
@@ -56,7 +76,54 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   });
 }
 
+export function summarizeMedia(input: {
+  timestamps: Array<number | string | null | undefined>;
+  likes: Array<number | null | undefined>;
+  comments: Array<number | null | undefined>;
+  hasVideo?: boolean;
+}): Pick<
+  InstagramMetrics,
+  "lastPostAt" | "postsLast30Days" | "avgLikes" | "avgComments" | "hasReels" | "recentSampleSize"
+> {
+  const times = input.timestamps
+    .map((value) => {
+      if (typeof value === "number" && Number.isFinite(value)) {
+        return value > 10_000_000_000 ? value / 1000 : value;
+      }
+      if (typeof value === "string" && value) {
+        const parsed = Date.parse(value);
+        return Number.isFinite(parsed) ? parsed / 1000 : null;
+      }
+      return null;
+    })
+    .filter((value): value is number => value != null)
+    .sort((a, b) => b - a);
+
+  const likes = input.likes.filter((value): value is number => value != null);
+  const comments = input.comments.filter((value): value is number => value != null);
+  const now = Date.now() / 1000;
+
+  return {
+    lastPostAt: times[0] ? new Date(times[0] * 1000).toISOString() : null,
+    postsLast30Days: times.filter((time) => now - time <= 30 * 86400).length,
+    avgLikes: likes.length ? Math.round(likes.reduce((sum, n) => sum + n, 0) / likes.length) : null,
+    avgComments: comments.length
+      ? Math.round(comments.reduce((sum, n) => sum + n, 0) / comments.length)
+      : null,
+    hasReels: input.hasVideo ?? null,
+    recentSampleSize: times.length || likes.length || null,
+  };
+}
+
 function mapUser(username: string, user: IgApiUser): InstagramMetrics {
+  const nodes = user.edge_owner_to_timeline_media?.edges?.map((edge) => edge.node).filter(Boolean) ?? [];
+  const stats = summarizeMedia({
+    timestamps: nodes.map((node) => node?.taken_at_timestamp),
+    likes: nodes.map((node) => node?.edge_liked_by?.count ?? node?.edge_media_preview_like?.count),
+    comments: nodes.map((node) => node?.edge_media_to_comment?.count),
+    hasVideo: nodes.some((node) => node?.is_video || node?.__typename === "GraphVideo"),
+  });
+
   return {
     username: user.username ?? username,
     found: true,
@@ -68,15 +135,15 @@ function mapUser(username: string, user: IgApiUser): InstagramMetrics {
     biography: user.biography ?? null,
     externalUrl: user.external_url ?? null,
     profilePicUrl: user.profile_pic_url_hd ?? null,
+    ...stats,
+    source: "web_profile",
     fetchedAt: new Date().toISOString(),
   };
 }
 
 /** Parsea meta og:description — ej. "1,234 Followers, 567 Following, 89 Posts" */
 function parseMetaDescription(html: string): Partial<InstagramMetrics> {
-  const match = html.match(
-    /property="og:description"\s+content="([^"]+)"/i,
-  );
+  const match = html.match(/property="og:description"\s+content="([^"]+)"/i);
   if (!match?.[1]) return {};
 
   const text = match[1];
@@ -93,6 +160,36 @@ function parseMetaDescription(html: string): Partial<InstagramMetrics> {
     following: num(following),
     posts: num(posts),
   };
+}
+
+async function fetchBusinessDiscovery(username: string): Promise<InstagramMetrics | null> {
+  try {
+    const profile = await discoverBusiness(username);
+    if (!profile) return null;
+    const stats = summarizeMedia({
+      timestamps: profile.media.map((item) => item.timestamp),
+      likes: profile.media.map((item) => item.likeCount),
+      comments: profile.media.map((item) => item.commentsCount),
+      hasVideo: profile.media.some((item) => item.mediaType === "VIDEO"),
+    });
+    return {
+      username: profile.username,
+      found: true,
+      isPrivate: false,
+      isBusiness: true,
+      followers: profile.followers,
+      following: null,
+      posts: profile.posts,
+      biography: profile.biography,
+      externalUrl: profile.website,
+      profilePicUrl: profile.profilePictureUrl,
+      ...stats,
+      source: "graph",
+      fetchedAt: new Date().toISOString(),
+    };
+  } catch {
+    return null;
+  }
 }
 
 async function fetchWebProfileInfo(username: string): Promise<InstagramMetrics | null> {
@@ -148,17 +245,19 @@ async function fetchHtmlFallback(username: string): Promise<InstagramMetrics | n
   return {
     ...emptyMetrics(username, fromMeta),
     biography: bioMatch?.[1]?.split("(@")[0]?.trim() ?? null,
+    source: "html",
   };
 }
 
 /**
- * Obtiene métricas públicas de un perfil de Instagram.
- * Intenta API web de Instagram; si falla, parsea meta tags del HTML público.
+ * Obtiene métricas de un perfil de Instagram.
+ * Intenta Graph Business Discovery (si hay Facebook Login),
+ * luego la API web pública, y por último meta tags HTML.
  */
 export async function analyzeInstagram(
   handle: string | null | undefined,
-): Promise<{ metrics: InstagramMetrics; raw: IgApiResponse | null }> {
-  const username = normalizeUsername(handle ?? "");
+): Promise<{ metrics: InstagramMetrics; raw: unknown }> {
+  const username = normalizeInstagramUsername(handle ?? "");
   if (!username) {
     return {
       metrics: emptyMetrics("", { error: "Sin handle de Instagram" }),
@@ -167,14 +266,19 @@ export async function analyzeInstagram(
   }
 
   try {
+    const fromGraph = await fetchBusinessDiscovery(username);
+    if (fromGraph) {
+      return { metrics: fromGraph, raw: fromGraph };
+    }
+
     const fromApi = await fetchWebProfileInfo(username);
     if (fromApi) {
-      return { metrics: fromApi, raw: null };
+      return { metrics: fromApi, raw: fromApi };
     }
 
     const fromHtml = await fetchHtmlFallback(username);
     if (fromHtml) {
-      return { metrics: fromHtml, raw: null };
+      return { metrics: fromHtml, raw: fromHtml };
     }
 
     return {
@@ -192,12 +296,21 @@ export async function analyzeInstagram(
   }
 }
 
+export function daysSinceIso(iso: string | null | undefined): number | null {
+  if (!iso) return null;
+  const then = Date.parse(iso);
+  if (!Number.isFinite(then)) return null;
+  return Math.max(0, Math.floor((Date.now() - then) / 86_400_000));
+}
+
 export function formatInstagramEvidence(m: InstagramMetrics): string {
   if (!m.found) return m.error ?? "Perfil no analizado";
+  const days = daysSinceIso(m.lastPostAt);
   const parts = [
     `@${m.username}`,
     m.followers != null ? `${m.followers.toLocaleString("es")} seguidores` : null,
     m.posts != null ? `${m.posts} publicaciones` : null,
+    days != null ? `último post hace ${days} días` : null,
     m.isPrivate ? "cuenta privada" : null,
     m.isBusiness ? "cuenta comercial" : null,
     m.externalUrl ? "link en bio" : "sin link en bio",

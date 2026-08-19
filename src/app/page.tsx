@@ -2,6 +2,7 @@ import { BenchmarksSection } from "@/components/landing/benchmarks-section";
 import { CtaSection } from "@/components/landing/cta-section";
 import { FeaturesSection } from "@/components/landing/features-section";
 import { HeroSection } from "@/components/landing/hero-section";
+import { InstagramSection } from "@/components/landing/instagram-section";
 import { IndustryMarquee } from "@/components/landing/industry-marquee";
 import { ReportPreviewSection } from "@/components/landing/report-preview-section";
 import { ResourcesSection } from "@/components/landing/resources-section";
@@ -11,7 +12,7 @@ import { SiteHeader } from "@/components/landing/site-header";
 
 export default function HomePage() {
   return (
-    <div className="lp-font min-h-screen bg-white">
+    <div className="lp-font min-h-screen overflow-x-clip bg-white">
       <SiteHeader />
       <HeroSection />
       <IndustryMarquee />
@@ -19,6 +20,7 @@ export default function HomePage() {
       <ReportPreviewSection />
       <BenchmarksSection />
       <ResultsSection />
+      <InstagramSection />
       <ResourcesSection />
       <CtaSection />
       <SiteFooter />

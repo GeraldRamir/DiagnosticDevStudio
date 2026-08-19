@@ -172,4 +172,52 @@ describe("calculateScores", () => {
       expect(result.scoreLabel).toBe("Funcional");
     else expect(result.scoreLabel).toBe("Sólido");
   });
+
+  it("penaliza Instagram inactivo y premia recencia", () => {
+    const hours = calculateHoursLost({
+      weeklyHoursOnAdmin: "5_10",
+      recordKeeping: "excel",
+      orderChannel: ["redes"],
+    });
+
+    const stale = calculateScores({
+      form: {
+        hasWebsite: "social_only",
+        websiteUrl: null,
+        instagramHandle: "@negocio",
+        orderChannel: ["redes"],
+        recordKeeping: "excel",
+        weeklyHoursOnAdmin: "5_10",
+        teamSize: "solo",
+        biggestTimeWaster: "Publicar a mano",
+      },
+      technical: null,
+      instagram: {
+        username: "negocio",
+        found: true,
+        isPrivate: false,
+        isBusiness: true,
+        followers: 80,
+        following: 40,
+        posts: 20,
+        biography: "Demo",
+        externalUrl: null,
+        profilePicUrl: null,
+        lastPostAt: new Date(Date.now() - 80 * 86_400_000).toISOString(),
+        postsLast30Days: 0,
+        avgLikes: 0,
+        avgComments: 0,
+        hasReels: false,
+        recentSampleSize: 8,
+        source: "web_profile",
+        fetchedAt: new Date().toISOString(),
+      },
+      hours,
+    });
+
+    const recency = stale.signals.find((s) => s.id === "captacion.ig_recency");
+    const engagement = stale.signals.find((s) => s.id === "captacion.ig_engagement");
+    expect(recency?.status).toBe("fail");
+    expect(engagement?.status).toBe("fail");
+  });
 });

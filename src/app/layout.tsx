@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Bricolage_Grotesque,
   Inter,
@@ -46,6 +46,12 @@ export const metadata: Metadata = {
   },
   description:
     "Analiza la madurez digital de tu negocio y recibe un reporte con hallazgos concretos en 2 minutos.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

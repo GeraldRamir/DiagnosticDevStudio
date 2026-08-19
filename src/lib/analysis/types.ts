@@ -85,6 +85,17 @@ export type InstagramMetrics = {
   biography: string | null;
   externalUrl: string | null;
   profilePicUrl: string | null;
+  lastPostAt: string | null;
+  postsLast30Days: number | null;
+  avgLikes: number | null;
+  avgComments: number | null;
+  hasReels: boolean | null;
+  recentSampleSize: number | null;
+  reach7d?: number | null;
+  impressions7d?: number | null;
+  profileViews7d?: number | null;
+  oauthConnected?: boolean;
+  source?: "graph" | "web_profile" | "html" | "oauth" | null;
   error?: string;
   fetchedAt: string;
 };

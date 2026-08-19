@@ -127,6 +127,12 @@ export function DiagnosticForm() {
   const [formId, setFormId] = useState("");
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [igOauth, setIgOauth] = useState<{
+    configured: boolean;
+    connected: boolean;
+    username: string | null;
+    followers: number | null;
+  } | null>(null);
   const stepRef = useRef(step);
 
   const form = useForm<DiagnosticFormValues>({
@@ -159,6 +165,26 @@ export function DiagnosticForm() {
     }
     setFormId(createFormId());
   }, [form]);
+
+  useEffect(() => {
+    fetch("/api/instagram/oauth/me")
+      .then((res) => res.json())
+      .then((data: { configured?: boolean; connected?: boolean; username?: string | null; followers?: number | null }) => {
+        setIgOauth({
+          configured: Boolean(data.configured),
+          connected: Boolean(data.connected),
+          username: data.username ?? null,
+          followers: data.followers ?? null,
+        });
+        if (data.connected && data.username) {
+          const current = getValues("instagramHandle");
+          if (!current?.trim()) setValue("instagramHandle", `@${data.username}`);
+        }
+      })
+      .catch(() => {
+        setIgOauth({ configured: false, connected: false, username: null, followers: null });
+      });
+  }, [form, getValues, setValue]);
 
   const displayFormId = formId || "······";
 
@@ -299,7 +325,7 @@ export function DiagnosticForm() {
           </div>
 
           <div className="overflow-hidden rounded-xl border border-[#e2e8f0] bg-white shadow-[0_4px_24px_rgba(15,23,42,0.05)]">
-            <div className="border-b border-[#e2e8f0] bg-[#f8fafc] px-6 py-5 sm:px-8">
+            <div className="border-b border-[#e2e8f0] bg-[#f8fafc] px-4 py-5 sm:px-8">
               <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-[#64748b]">
                 Sección {step + 1} de 4
               </p>
@@ -308,7 +334,7 @@ export function DiagnosticForm() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
-              <div className="relative min-h-[320px] px-6 py-7 sm:px-8 sm:py-8">
+              <div className="relative min-h-[280px] px-4 py-6 sm:px-8 sm:py-8">
                 <AnimatePresence mode="wait" custom={direction}>
                   <motion.div
                     key={stepId}
@@ -404,14 +430,32 @@ export function DiagnosticForm() {
                             </motion.div>
                           ) : null}
                         </AnimatePresence>
-                        {hasWebsite === "social_only" || hasWebsite === "yes" ? (
-                          <FormInput
-                            id={`${baseId}-ig`}
-                            label={f.instagramHandle.label}
-                            placeholder={f.instagramHandle.placeholder}
-                            error={errors.instagramHandle?.message}
-                            {...register("instagramHandle")}
-                          />
+                        <FormInput
+                          id={`${baseId}-ig`}
+                          label={f.instagramHandle.label}
+                          placeholder={f.instagramHandle.placeholder}
+                          error={errors.instagramHandle?.message}
+                          {...register("instagramHandle")}
+                        />
+                        {igOauth?.configured ? (
+                          <div className="rounded-md border border-[#e2e8f0] bg-[#f8fafc] px-4 py-3">
+                            <p className="text-xs text-[#64748b]">{f.instagramHandle.hint}</p>
+                            {igOauth.connected && igOauth.username ? (
+                              <p className="mt-2 text-sm font-medium text-[#0f172a]">
+                                {f.instagramHandle.connected.replace("{username}", igOauth.username)}
+                                {igOauth.followers != null
+                                  ? ` · ${igOauth.followers.toLocaleString("es")} seguidores`
+                                  : ""}
+                              </p>
+                            ) : (
+                              <a
+                                href="/api/instagram/oauth"
+                                className="mt-2 inline-flex h-9 items-center rounded-full bg-[#111] px-4 text-xs font-semibold text-white"
+                              >
+                                {f.instagramHandle.connect}
+                              </a>
+                            )}
+                          </div>
                         ) : null}
                       </>
                     ) : null}
