@@ -41,7 +41,7 @@ export function HeroSection() {
   const h = lp.hero;
 
   return (
-    <section className="relative overflow-x-clip px-[clamp(1rem,4vw,3.75rem)] pb-6 pt-[clamp(1.5rem,4vw,4rem)]">
+    <section className="relative px-[clamp(1.25rem,4vw,3.75rem)] pb-6 pt-[clamp(2.5rem,5vw,4rem)]">
       <div className="mx-auto w-full max-w-5xl text-center">
         <motion.h1
           initial={reduce ? false : { opacity: 0, y: 20 }}
@@ -67,16 +67,15 @@ export function HeroSection() {
           initial={reduce ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={reduce ? { duration: 0 } : { duration: 0.7, delay: 0.2, ease: EASE }}
-          className="mt-7 flex w-full flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center"
+          className="mt-7 flex flex-wrap items-center justify-center gap-3"
         >
-          <LpButton href={h.ctaPrimary.href} variant="dark" size="lg" className="w-full sm:w-auto">
+          <LpButton href={h.ctaPrimary.href} variant="dark" size="lg">
             {h.ctaPrimary.label}
           </LpButton>
           <LpButton
             href={h.ctaSecondary.href}
             variant="light"
             size="lg"
-            className="w-full sm:w-auto"
             icon={<ArrowRight className="size-4" />}
           >
             {h.ctaSecondary.label}
@@ -90,7 +89,7 @@ export function HeroSection() {
           {/* Columna izquierda */}
           <div className="order-2 flex flex-row flex-wrap items-start justify-center gap-4 lg:order-1 lg:flex-col lg:items-start">
             <FloatCard delay={0.5} float="normal">
-              <div className="lp-card-hover w-full max-w-[190px] rounded-[1.375rem] bg-[#ffd95e] p-4">
+              <div className="lp-card-hover w-[190px] rounded-[1.375rem] bg-[#ffd95e] p-4">
                 <span className="flex size-8 items-center justify-center rounded-full bg-[#111111]/10">
                   <Timer className="size-4 text-[#3c2f00]" />
                 </span>
@@ -104,7 +103,7 @@ export function HeroSection() {
             </FloatCard>
 
             <FloatCard delay={0.65} float="slow">
-              <div className="lp-card-hover w-full max-w-[214px] rounded-[1.375rem] border border-[#efecf4] bg-white p-4 shadow-[0_12px_30px_rgba(60,30,90,0.08)]">
+              <div className="lp-card-hover w-[214px] rounded-[1.375rem] border border-[#efecf4] bg-white p-4 shadow-[0_12px_30px_rgba(60,30,90,0.08)]">
                 <div className="flex items-center gap-2">
                   <span className="flex size-8 items-center justify-center rounded-full bg-[#f3ecff] text-[#5b3fa8]">
                     <Link2 className="size-4" />
@@ -128,7 +127,7 @@ export function HeroSection() {
           {/* Columna derecha */}
           <div className="order-3 flex flex-row flex-wrap items-start justify-center gap-4 lg:flex-col lg:items-end">
             <FloatCard delay={0.8} float="slow">
-              <div className="lp-card-hover w-full max-w-[214px] rounded-[1.375rem] border border-[#efecf4] bg-white p-4 shadow-[0_12px_30px_rgba(60,30,90,0.08)]">
+              <div className="lp-card-hover w-[214px] rounded-[1.375rem] border border-[#efecf4] bg-white p-4 shadow-[0_12px_30px_rgba(60,30,90,0.08)]">
                 <div className="flex items-center gap-2">
                   <span className="flex size-8 items-center justify-center rounded-full bg-[#ffe7e1] text-[#ee5b45]">
                     <Gauge className="size-4" />
@@ -144,7 +143,7 @@ export function HeroSection() {
             </FloatCard>
 
             <FloatCard delay={0.95} float="normal">
-              <div className="lp-card-hover w-full max-w-[190px] rounded-[1.375rem] bg-[#ee5b45] p-4 text-white">
+              <div className="lp-card-hover w-[190px] rounded-[1.375rem] bg-[#ee5b45] p-4 text-white">
                 <span className="flex size-8 items-center justify-center rounded-full bg-white/20">
                   <Globe2 className="size-4" />
                 </span>

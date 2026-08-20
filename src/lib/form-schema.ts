@@ -54,6 +54,14 @@ export const diagnosticFormSchema = z
         }
       }
     }
+
+    if (data.hasWebsite === "social_only" && !data.instagramHandle?.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Conecta Instagram o ingresa tu @usuario",
+        path: ["instagramHandle"],
+      });
+    }
   });
 
 export type DiagnosticFormValues = z.infer<typeof diagnosticFormSchema>;

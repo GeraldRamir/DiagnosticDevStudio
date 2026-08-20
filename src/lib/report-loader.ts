@@ -25,6 +25,7 @@ export async function loadReportBySlug(slug: string) {
     country: lead.country,
     hasWebsite: lead.hasWebsite,
     websiteUrl: lead.websiteUrl,
+    instagramHandle: lead.instagramHandle,
     fullName: lead.fullName,
     email: lead.email,
     whatsapp: lead.whatsapp,

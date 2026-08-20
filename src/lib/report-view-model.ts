@@ -50,6 +50,7 @@ export type ReportMeta = {
   country: string;
   industry: string;
   websiteUrl: string | null;
+  instagramHandle: string | null;
   hasWebsite: string;
   fullName: string;
   email: string;
@@ -89,6 +90,7 @@ export function buildReportViewModel(input: {
   country: string;
   hasWebsite: string;
   websiteUrl: string | null;
+  instagramHandle: string | null;
   fullName: string;
   email: string;
   whatsapp: string;
@@ -176,6 +178,7 @@ export function buildReportViewModel(input: {
       country: input.country,
       industry: input.industry,
       websiteUrl: input.websiteUrl,
+      instagramHandle: input.instagramHandle,
       hasWebsite: input.hasWebsite,
       fullName: input.fullName,
       email: input.email,

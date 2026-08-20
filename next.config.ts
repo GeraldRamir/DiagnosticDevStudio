@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
     "@prisma/client",
     "@prisma/adapter-neon",
     "@neondatabase/serverless",
+    "@google/genai",
+    "resend",
   ],
   images: {
     remotePatterns: [

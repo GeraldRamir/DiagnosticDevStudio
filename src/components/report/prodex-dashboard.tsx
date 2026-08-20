@@ -11,13 +11,15 @@ import { SettingsView } from "@/components/report/views/settings-view";
 import { SignalsView } from "@/components/report/views/signals-view";
 import { SoftwareView } from "@/components/report/views/software-view";
 import type { ReportViewId, ReportViewModel } from "@/lib/report-view-model";
+import { buildInstagramDashboardSummary } from "@/lib/analysis/instagram-bio";
 
 type ProdexDashboardProps = {
   report: ReportViewModel;
 };
 
 export function ProdexDashboard({ report }: ProdexDashboardProps) {
-  const { dashboard, meta, pillars, signals, narrative, hours, scores } = report;
+  const { dashboard, meta, pillars, signals, narrative, hours, scores, instagram } = report;
+  const instagramSummary = buildInstagramDashboardSummary(instagram, meta.instagramHandle);
   const [activeView, setActiveView] = useState<ReportViewId>("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
   const [copied, setCopied] = useState(false);
@@ -71,6 +73,7 @@ export function ProdexDashboard({ report }: ProdexDashboardProps) {
             data={dashboard}
             slug={meta.slug}
             analysisStatus={meta.analysisStatus}
+            instagram={instagramSummary}
             onNavigate={setActiveView}
             onExportPdf={handleExportPdf}
             onCopyLink={handleCopyLink}

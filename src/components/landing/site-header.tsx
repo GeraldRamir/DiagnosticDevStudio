@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -41,8 +41,8 @@ function MegaPanel({ children }: { children: ReactNode }) {
   return (
     <div
       className={cn(
-        "invisible absolute left-1/2 top-full z-[70] w-[min(42rem,calc(100dvw-2rem))] -translate-x-1/2 pt-3 opacity-0",
-        "pointer-events-none transition-[opacity,visibility] duration-200",
+        "invisible absolute left-1/2 top-full z-[70] w-[min(42rem,calc(100vw-2rem))] -translate-x-1/2 pt-3 opacity-0",
+        "pointer-events-none transition-all duration-200",
         "group-hover:visible group-hover:pointer-events-auto group-hover:opacity-100",
         "group-focus-within:visible group-focus-within:pointer-events-auto group-focus-within:opacity-100",
       )}
@@ -147,47 +147,29 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const menus = [lp.navMenus.measure, lp.navMenus.how, lp.navMenus.report];
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("nav-open", open);
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.documentElement.classList.remove("nav-open");
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open]);
-
   return (
-    <header className="sticky top-0 z-50 bg-white/92 px-[clamp(1rem,4vw,3.75rem)] pt-[max(0.85rem,env(safe-area-inset-top))] backdrop-blur-md">
-      <div className="mx-auto flex h-14 w-full max-w-6xl min-w-0 items-center justify-between gap-3 sm:h-16">
-        <Link href="/" className="flex h-9 min-w-0 shrink-0 items-center sm:h-11" aria-label="DevStudio">
+    <header className="relative z-50 px-[clamp(1.25rem,4vw,3.75rem)] pt-5">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6">
+        <Link href="/" className="flex h-10 shrink-0 items-center sm:h-11" aria-label="DevStudio">
           <Image
             src={LOGO_SRC}
             alt="DevStudio"
             width={819}
             height={1024}
             priority
-            className="h-full w-auto max-w-[7.5rem] object-contain sm:max-w-none"
+            className="h-full w-auto object-contain"
             sizes="120px"
           />
         </Link>
 
-        <nav className="hidden min-w-0 items-center gap-0.5 lg:flex">
+        <nav className="hidden items-center gap-0.5 lg:flex">
           {menus.map((menu) => (
             <NavDropdown key={menu.label} menu={menu} />
           ))}
           <PlainNavLink href="#recursos" label="Recursos" />
         </nav>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex items-center gap-2">
           <Link
             href={lp.navSecondary.href}
             className="lp-font hidden text-sm font-semibold text-[#131316] transition-colors hover:text-[#ee5b45] sm:inline-flex"
@@ -203,93 +185,62 @@ export function SiteHeader() {
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={open}
-            className="relative z-[100] flex size-11 items-center justify-center rounded-full border border-[#eae6f2] bg-white text-[#131316] transition-colors hover:border-[#c9bdea] lg:hidden"
+            className="flex size-10 items-center justify-center rounded-full border border-[#eae6f2] bg-white text-[#131316] transition-colors hover:border-[#c9bdea] lg:hidden"
           >
-            {open ? <X className="size-4" aria-hidden="true" /> : <Menu className="size-4" aria-hidden="true" />}
+            {open ? <X className="size-4" /> : <Menu className="size-4" />}
           </button>
         </div>
       </div>
 
       <AnimatePresence>
         {open ? (
-          <>
-            <motion.button
-              key="backdrop"
-              type="button"
-              aria-label="Cerrar menú"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[80] bg-black/40 lg:hidden"
-              onClick={() => setOpen(false)}
-            />
-            <motion.aside
-              key="drawer"
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed inset-y-0 right-0 z-[90] flex h-dvh w-[min(22rem,calc(100%-3.25rem))] flex-col overflow-y-auto overscroll-contain bg-white shadow-[0_18px_50px_rgba(20,10,40,0.18)] lg:hidden"
-              style={{
-                paddingTop: "max(1.25rem, env(safe-area-inset-top))",
-                paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))",
-                paddingLeft: "1.1rem",
-                paddingRight: "max(1.1rem, env(safe-area-inset-right))",
-              }}
-            >
-              <p className="px-2 text-[0.625rem] font-bold uppercase tracking-[0.16em] text-[#b6b6c0]">
-                Menú
-              </p>
-              <ul className="mt-2 space-y-1">
-                {[
-                  ...menus.map((m) => ({ href: m.href, label: m.label })),
-                  { href: "#recursos", label: "Recursos" },
-                ].map((item) => (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22 }}
+            className="mx-auto mt-3 w-full max-w-6xl overflow-hidden rounded-3xl border border-[#efecf4] bg-white p-3 shadow-[0_18px_40px_rgba(60,30,90,0.10)] lg:hidden"
+          >
+            <ul className="space-y-1">
+              {[...menus.map((m) => ({ href: m.href, label: m.label })), { href: "#recursos", label: "Recursos" }].map(
+                (item) => (
                   <li key={item.href}>
                     <Link
                       href={item.href}
                       onClick={() => setOpen(false)}
-                      className="lp-font flex min-h-11 items-center justify-between rounded-2xl px-3 py-2.5 text-sm font-semibold text-[#131316] transition-colors hover:bg-[#f6f3fb]"
+                      className="lp-font flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-[#131316] transition-colors hover:bg-[#f6f3fb]"
                     >
-                      <span className="min-w-0 break-words">{item.label}</span>
-                      <ArrowRight className="size-4 shrink-0 text-[#b6b6c0]" aria-hidden="true" />
+                      {item.label}
+                      <ArrowRight className="size-4 text-[#b6b6c0]" />
                     </Link>
                   </li>
-                ))}
-              </ul>
+                ),
+              )}
+            </ul>
 
-              {menus.map((menu) => (
-                <div key={menu.label} className="mt-4">
-                  <p className="px-3 text-[0.625rem] font-bold uppercase tracking-[0.16em] text-[#b6b6c0]">
-                    {menu.label}
-                  </p>
-                  <div className="mt-1 space-y-1">
-                    {menu.groups.flatMap((group) => group.items).map((item) => (
-                      <Link
-                        key={item.title}
-                        href={item.href}
-                        onClick={() => setOpen(false)}
-                        className="block min-w-0 rounded-xl px-3 py-2.5 hover:bg-[#f7f4fc]"
-                      >
-                        <p className="text-sm font-semibold text-[#131316]">{item.title}</p>
-                        <p className="text-[0.75rem] leading-snug text-[#8b8b96]">{item.desc}</p>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
+            <div className="mt-2 space-y-2 rounded-2xl bg-[#f7f4fc] p-3">
+              {menus[0].groups[0].items.slice(0, 3).map((item) => (
+                <Link
+                  key={item.title}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="block rounded-xl px-2 py-1.5"
+                >
+                  <p className="text-sm font-semibold text-[#131316]">{item.title}</p>
+                  <p className="text-[0.75rem] text-[#8b8b96]">{item.desc}</p>
+                </Link>
               ))}
+            </div>
 
-              <div className="mt-auto grid gap-2 pt-6">
-                <LpButton href={lp.navCta.href} variant="dark" className="w-full">
-                  {lp.navCta.label}
-                </LpButton>
-                <LpButton href={lp.navSecondary.href} variant="light" className="w-full">
-                  {lp.navSecondary.label}
-                </LpButton>
-              </div>
-            </motion.aside>
-          </>
+            <div className="mt-2 grid gap-2 px-1 pb-1">
+              <LpButton href={lp.navCta.href} variant="dark" className="w-full">
+                {lp.navCta.label}
+              </LpButton>
+              <LpButton href={lp.navSecondary.href} variant="light" className="w-full">
+                {lp.navSecondary.label}
+              </LpButton>
+            </div>
+          </motion.div>
         ) : null}
       </AnimatePresence>
     </header>

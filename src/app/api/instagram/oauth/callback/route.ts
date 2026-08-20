@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { encodeLeadSnapshot, exchangeInstagramCode, LEAD_IG_COOKIE } from "@/lib/instagram/oauth";
+import {
+  exchangeInstagramAuth,
+  setLeadInstagramCookies,
+} from "@/lib/instagram/oauth";
+import { trackFunnelEvent } from "@/lib/funnel/track-event";
+import { getFunnelSessionId } from "@/lib/funnel/session";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -13,15 +18,16 @@ export async function GET(request: Request) {
   }
 
   try {
-    const metrics = await exchangeInstagramCode(code);
+    const { metrics, accessToken } = await exchangeInstagramAuth(code);
     dest.searchParams.set("ig", "ok");
     const response = NextResponse.redirect(dest);
-    response.cookies.set(LEAD_IG_COOKIE, await encodeLeadSnapshot(metrics), {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 2,
-    });
+    await setLeadInstagramCookies(response, metrics, accessToken);
+
+    const sessionId = await getFunnelSessionId();
+    if (sessionId) {
+      await trackFunnelEvent({ sessionId, step: "instagram_connect" });
+    }
+
     return response;
   } catch {
     dest.searchParams.set("ig", "error");

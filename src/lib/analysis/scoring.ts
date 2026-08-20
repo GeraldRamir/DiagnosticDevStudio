@@ -10,7 +10,7 @@ import type {
   TechnicalMetrics,
   InstagramMetrics,
 } from "./types";
-import { daysSinceIso } from "./instagram";
+import { daysSinceIso } from "./instagram-utils";
 
 export type ScoringInput = {
   form: Pick<

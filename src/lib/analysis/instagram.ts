@@ -1,5 +1,8 @@
 import { discoverBusiness } from "@/lib/instagram/graph";
+import { daysSinceIso, normalizeInstagramUsername } from "@/lib/analysis/instagram-utils";
 import type { InstagramMetrics } from "./types";
+
+export { daysSinceIso, normalizeInstagramUsername } from "@/lib/analysis/instagram-utils";
 
 const TIMEOUT_MS = 20_000;
 const IG_APP_ID = "936619743392459";
@@ -32,10 +35,6 @@ type IgApiResponse = {
   data?: { user?: IgApiUser };
   status?: string;
 };
-
-export function normalizeInstagramUsername(handle: string): string {
-  return handle.trim().replace(/^@+/, "").split("/")[0]?.toLowerCase() ?? "";
-}
 
 function emptyMetrics(username: string, partial: Partial<InstagramMetrics> = {}): InstagramMetrics {
   return {
@@ -283,7 +282,8 @@ export async function analyzeInstagram(
 
     return {
       metrics: emptyMetrics(username, {
-        error: "Perfil no encontrado o no accesible públicamente",
+        error:
+          "Instagram ya no expone seguidores de forma pública. Conecta tu cuenta con OAuth al completar el diagnóstico.",
       }),
       raw: null,
     };
@@ -294,13 +294,6 @@ export async function analyzeInstagram(
       raw: null,
     };
   }
-}
-
-export function daysSinceIso(iso: string | null | undefined): number | null {
-  if (!iso) return null;
-  const then = Date.parse(iso);
-  if (!Number.isFinite(then)) return null;
-  return Math.max(0, Math.floor((Date.now() - then) / 86_400_000));
 }
 
 export function formatInstagramEvidence(m: InstagramMetrics): string {

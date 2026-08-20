@@ -5,10 +5,18 @@ import {
   generateNarrative,
 } from "@/lib/analysis";
 import { analyzeInstagram } from "@/lib/analysis/instagram";
-import { readLeadSnapshot } from "@/lib/instagram/oauth";
-import type { DiagnosticInput } from "@/lib/analysis/types";
+import { refreshLeadInstagramMetrics } from "@/lib/instagram/oauth";
+import type { DiagnosticInput, InstagramMetrics } from "@/lib/analysis/types";
 import type { DiagnosticFormValues } from "@/lib/form-schema";
 import { toDiagnosticInput } from "@/lib/form-schema";
+
+function needsInstagramMetrics(input: DiagnosticInput) {
+  return (
+    input.hasWebsite === "social_only" ||
+    Boolean(input.instagramHandle?.trim()) ||
+    input.orderChannel.includes("redes")
+  );
+}
 
 export async function runDiagnostic(values: DiagnosticFormValues) {
   const input: DiagnosticInput = toDiagnosticInput(values);
@@ -21,11 +29,37 @@ export async function runDiagnostic(values: DiagnosticFormValues) {
 
   let technical = null;
   let technicalRaw: unknown = null;
-  let instagram = null;
+  let instagram: InstagramMetrics | null = null;
   let instagramRaw: unknown = null;
   let forcePartial = false;
 
-  const analysisJobs: Promise<void>[] = [];
+  async function resolveInstagram() {
+    const oauthMetrics = await refreshLeadInstagramMetrics();
+    if (oauthMetrics?.found) {
+      instagram = oauthMetrics;
+      instagramRaw = oauthMetrics;
+      if (!input.instagramHandle?.trim()) {
+        input.instagramHandle = `@${oauthMetrics.username}`;
+      }
+      return;
+    }
+
+    if (input.instagramHandle?.trim()) {
+      const scraped = await analyzeInstagram(input.instagramHandle);
+      instagram = scraped.metrics;
+      instagramRaw = scraped.raw ?? scraped.metrics;
+      if (!scraped.metrics.found) {
+        forcePartial = true;
+      }
+      return;
+    }
+
+    if (needsInstagramMetrics(input)) {
+      forcePartial = true;
+    }
+  }
+
+  const analysisJobs: Promise<void>[] = [resolveInstagram()];
 
   if (input.hasWebsite === "yes" && input.websiteUrl) {
     analysisJobs.push(
@@ -39,32 +73,7 @@ export async function runDiagnostic(values: DiagnosticFormValues) {
     );
   }
 
-  if (input.instagramHandle?.trim()) {
-    analysisJobs.push(
-      analyzeInstagram(input.instagramHandle).then((result) => {
-        instagram = result.metrics;
-        instagramRaw = result.raw ?? result.metrics;
-        if (!result.metrics.found) {
-          forcePartial = true;
-        }
-      }),
-    );
-  }
-
   await Promise.all(analysisJobs);
-
-  const oauthSnapshot = await readLeadSnapshot();
-  if (oauthSnapshot?.found) {
-    instagram = {
-      ...(instagram ?? {}),
-      ...oauthSnapshot,
-      found: true,
-    };
-    instagramRaw = oauthSnapshot;
-    if (!input.instagramHandle?.trim()) {
-      input.instagramHandle = `@${oauthSnapshot.username}`;
-    }
-  }
 
   const scores = calculateScores({
     form: {

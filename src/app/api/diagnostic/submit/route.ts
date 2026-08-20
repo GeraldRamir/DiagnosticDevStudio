@@ -14,6 +14,9 @@ export async function POST(request: Request) {
     );
   }
 
+  const started = Date.now();
+  console.info("[submit] processing started");
   const result = await processDiagnosticSubmission(body);
+  console.info("[submit] finished in", Date.now() - started, "ms", result.ok ? "ok" : result.error);
   return NextResponse.json(result, { status: result.ok ? 200 : 400 });
 }

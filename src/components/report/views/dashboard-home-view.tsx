@@ -33,13 +33,16 @@ import {
   StaticPill,
 } from "@/components/report/report-ui";
 import type { DashboardData } from "@/lib/report-dashboard";
+import type { InstagramDashboardSummary } from "@/lib/analysis/instagram-bio";
 import type { ReportViewId } from "@/lib/report-view-model";
+import { InstagramProfileCard } from "@/components/report/views/instagram-profile-card";
 import { cn } from "@/lib/utils";
 
 type DashboardHomeViewProps = {
   data: DashboardData;
   slug: string;
   analysisStatus: string;
+  instagram: InstagramDashboardSummary | null;
   onNavigate: (view: ReportViewId) => void;
   onExportPdf: () => void;
   onCopyLink: () => void;
@@ -151,6 +154,7 @@ export function DashboardHomeView({
   data,
   slug,
   analysisStatus,
+  instagram,
   onNavigate,
   onExportPdf,
   onCopyLink,
@@ -440,6 +444,8 @@ export function DashboardHomeView({
           </div>
         </div>
       </Card>
+
+      {instagram ? <InstagramProfileCard summary={instagram} delay={0.76} /> : null}
 
       {/* ── Percepción del negocio ── */}
       {feedbackOpen ? (

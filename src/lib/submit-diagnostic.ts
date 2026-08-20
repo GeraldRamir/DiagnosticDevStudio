@@ -4,6 +4,8 @@ import { diagnosticFormSchema } from "@/lib/form-schema";
 import { getPrisma } from "@/lib/db";
 import { sendDiagnosticReportEmail } from "@/lib/email/send-report-email";
 import { buildReportSlug } from "@/lib/slug";
+import { trackFunnelEvent } from "@/lib/funnel/track-event";
+import { getFunnelSessionId } from "@/lib/funnel/session";
 import type { SubmitDiagnosticResult } from "@/lib/submit-diagnostic.types";
 
 export type { SubmitDiagnosticResult };
@@ -18,7 +20,7 @@ export async function processDiagnosticSubmission(
 
     const prisma = getPrisma();
 
-    await prisma.lead.create({
+    const lead = await prisma.lead.create({
       data: {
         slug,
         businessName: values.businessName,
@@ -26,7 +28,7 @@ export async function processDiagnosticSubmission(
         country: values.country,
         hasWebsite: values.hasWebsite,
         websiteUrl: values.websiteUrl?.trim() || null,
-        instagramHandle: values.instagramHandle?.trim() || null,
+        instagramHandle: analysis.input.instagramHandle?.trim() || values.instagramHandle?.trim() || null,
         orderChannel: values.orderChannel,
         recordKeeping: values.recordKeeping,
         biggestTimeWaster: values.biggestTimeWaster,
@@ -56,13 +58,24 @@ export async function processDiagnosticSubmission(
       },
     });
 
-    await sendDiagnosticReportEmail({
+    const sessionId = await getFunnelSessionId();
+    if (sessionId) {
+      await trackFunnelEvent({
+        sessionId,
+        step: "diagnostico_submit",
+        leadId: lead.id,
+      });
+    }
+
+    void sendDiagnosticReportEmail({
       to: values.email,
       fullName: values.fullName,
       businessName: values.businessName,
       slug,
       globalScore: analysis.scores.globalScore,
       scoreLabel: analysis.scores.scoreLabel,
+    }).catch((err: unknown) => {
+      console.error("[submit] email failed:", err);
     });
 
     return { ok: true, slug };
