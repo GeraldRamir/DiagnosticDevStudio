@@ -7,13 +7,27 @@ import type {
   Signal,
   TechnicalMetrics,
 } from "@/lib/analysis/types";
+import { buildInstagramDashboardSummary } from "@/lib/analysis/instagram-bio";
+import { buildWebsiteDashboardSummary } from "@/lib/analysis/website-dashboard";
 import { generateSoftwareRecommendations } from "@/lib/analysis/fallback";
+import {
+  buildChannelKpis,
+  filterSignalsForFocus,
+  FOCUS_GREETINGS,
+  FOCUS_LABELS,
+  FOCUS_SUBTITLES,
+  resolveAnalysisFocus,
+  type AnalysisFocus,
+  type ChannelKpi,
+} from "@/lib/report/analysis-focus";
 import {
   buildDashboardData,
   normalizePillarScores,
   PILLAR_LABELS,
   type DashboardData,
 } from "@/lib/report-dashboard";
+import type { InstagramDashboardSummary } from "@/lib/analysis/instagram-bio";
+import type { WebsiteDashboardSummary } from "@/lib/analysis/website-dashboard";
 
 export type { DashboardData };
 export { normalizePillarScores, PILLAR_LABELS };
@@ -47,6 +61,10 @@ export type ReportMeta = {
   /** Etiqueta corta "mié, agosto" */
   createdAtLabel: string;
   analysisStatus: string;
+  analysisFocus: AnalysisFocus;
+  focusLabel: string;
+  focusSubtitle: string;
+  focusGreeting: string;
   country: string;
   industry: string;
   websiteUrl: string | null;
@@ -68,6 +86,10 @@ export type ReportViewModel = {
   scores: ScoringResult;
   technical: TechnicalMetrics | null;
   instagram: InstagramMetrics | null;
+  instagramSummary: InstagramDashboardSummary | null;
+  websiteSummary: WebsiteDashboardSummary | null;
+  channelKpis: ChannelKpi[];
+  analysisFocus: AnalysisFocus;
 };
 
 const PILLAR_IDS: PillarId[] = [
@@ -129,13 +151,40 @@ export function buildReportViewModel(input: {
         softwareRecommendations: generateSoftwareRecommendations(signals, scores, hours),
       };
 
+  const technical = (input.technicalMetricsRaw as TechnicalMetrics | null) ?? null;
+  const instagram = (input.instagramRaw as InstagramMetrics | null) ?? null;
+
+  const analysisFocus = resolveAnalysisFocus({
+    hasWebsite: input.hasWebsite,
+    instagram,
+    technical,
+    instagramHandle: input.instagramHandle,
+  });
+
+  const focusedSignals = filterSignalsForFocus(signals, analysisFocus);
+  const instagramSummary = buildInstagramDashboardSummary(instagram, input.instagramHandle);
+  const websiteSummary = buildWebsiteDashboardSummary(technical, input.websiteUrl);
+
+  const channelKpis = buildChannelKpis({
+    focus: analysisFocus,
+    instagram: instagramSummary,
+    website: websiteSummary,
+    globalScore: input.globalScore,
+    hoursRecoverable: Math.round(hours.automatizable),
+  });
+
   const dashboard = buildDashboardData(
     input.businessName,
     input.industry,
     scores,
     hours,
     narrative,
-    signals,
+    focusedSignals,
+    {
+      analysisFocus,
+      focusLabel: FOCUS_LABELS[analysisFocus],
+      channelKpis,
+    },
   );
 
   const pillarDetails: PillarDetail[] = PILLAR_IDS.map((id) => {
@@ -153,7 +202,7 @@ export function buildReportViewModel(input: {
     };
   });
 
-  const signalDetails: SignalDetail[] = signals.map((s) => ({
+  const signalDetails: SignalDetail[] = focusedSignals.map((s) => ({
     id: s.id,
     label: s.label,
     pillar: PILLAR_LABELS[s.pillar as PillarId] ?? s.pillar,
@@ -164,9 +213,6 @@ export function buildReportViewModel(input: {
     evidence: s.evidence,
   }));
 
-  const technical = (input.technicalMetricsRaw as TechnicalMetrics | null) ?? null;
-  const instagram = (input.instagramRaw as InstagramMetrics | null) ?? null;
-
   return {
     dashboard,
     meta: {
@@ -175,6 +221,10 @@ export function buildReportViewModel(input: {
       createdAtDay: input.createdAtDay ?? input.createdAt.split(" ")[0] ?? "—",
       createdAtLabel: input.createdAtLabel ?? input.createdAt,
       analysisStatus: input.analysisStatus,
+      analysisFocus,
+      focusLabel: FOCUS_LABELS[analysisFocus],
+      focusSubtitle: FOCUS_SUBTITLES[analysisFocus],
+      focusGreeting: FOCUS_GREETINGS[analysisFocus],
       country: input.country,
       industry: input.industry,
       websiteUrl: input.websiteUrl,
@@ -192,6 +242,10 @@ export function buildReportViewModel(input: {
     scores,
     technical,
     instagram,
+    instagramSummary,
+    websiteSummary,
+    channelKpis,
+    analysisFocus,
   };
 }
 

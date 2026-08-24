@@ -11,15 +11,25 @@ import { SettingsView } from "@/components/report/views/settings-view";
 import { SignalsView } from "@/components/report/views/signals-view";
 import { SoftwareView } from "@/components/report/views/software-view";
 import type { ReportViewId, ReportViewModel } from "@/lib/report-view-model";
-import { buildInstagramDashboardSummary } from "@/lib/analysis/instagram-bio";
 
 type ProdexDashboardProps = {
   report: ReportViewModel;
 };
 
 export function ProdexDashboard({ report }: ProdexDashboardProps) {
-  const { dashboard, meta, pillars, signals, narrative, hours, scores, instagram } = report;
-  const instagramSummary = buildInstagramDashboardSummary(instagram, meta.instagramHandle);
+  const {
+    dashboard,
+    meta,
+    pillars,
+    signals,
+    narrative,
+    hours,
+    scores,
+    instagramSummary,
+    websiteSummary,
+    channelKpis,
+    analysisFocus,
+  } = report;
   const [activeView, setActiveView] = useState<ReportViewId>("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
   const [copied, setCopied] = useState(false);
@@ -73,7 +83,12 @@ export function ProdexDashboard({ report }: ProdexDashboardProps) {
             data={dashboard}
             slug={meta.slug}
             analysisStatus={meta.analysisStatus}
+            analysisFocus={analysisFocus}
+            focusLabel={meta.focusLabel}
+            focusSubtitle={meta.focusSubtitle}
             instagram={instagramSummary}
+            website={websiteSummary}
+            channelKpis={channelKpis}
             onNavigate={setActiveView}
             onExportPdf={handleExportPdf}
             onCopyLink={handleCopyLink}
@@ -120,7 +135,7 @@ export function ProdexDashboard({ report }: ProdexDashboardProps) {
       dateDay={meta.createdAtDay}
       dateLabel={meta.createdAtLabel}
       greetingTitle={`Hola, ${firstName} 👋`}
-      greetingSubtitle="Tu diagnóstico está listo"
+      greetingSubtitle={meta.focusGreeting}
       findingsCount={narrative.findings.length}
       activeView={activeView}
       onNavigate={setActiveView}

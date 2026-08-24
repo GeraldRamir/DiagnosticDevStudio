@@ -6,6 +6,7 @@ import {
 } from "@/lib/analysis";
 import { analyzeInstagram } from "@/lib/analysis/instagram";
 import { refreshLeadInstagramMetrics } from "@/lib/instagram/oauth";
+import { resolveAnalysisFocus } from "@/lib/report/analysis-focus";
 import type { DiagnosticInput, InstagramMetrics } from "@/lib/analysis/types";
 import type { DiagnosticFormValues } from "@/lib/form-schema";
 import { toDiagnosticInput } from "@/lib/form-schema";
@@ -91,6 +92,13 @@ export async function runDiagnostic(values: DiagnosticFormValues) {
     hours,
   });
 
+  const analysisFocus = resolveAnalysisFocus({
+    hasWebsite: input.hasWebsite,
+    instagram,
+    technical,
+    instagramHandle: input.instagramHandle,
+  });
+
   const { narrative, analysisStatus } = await generateNarrative({
     signals: scores.signals,
     scores,
@@ -100,6 +108,7 @@ export async function runDiagnostic(values: DiagnosticFormValues) {
     biggestTimeWaster: input.biggestTimeWaster,
     businessName: input.businessName,
     forcePartial,
+    analysisFocus,
   });
 
   return {

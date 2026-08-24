@@ -6,6 +6,7 @@ import type {
   ScoringResult,
   Signal,
 } from "@/lib/analysis/types";
+import type { AnalysisFocus, ChannelKpi } from "@/lib/report/analysis-focus";
 import { RP_SCALE } from "@/lib/report-theme";
 
 export const PILLAR_LABELS: Record<PillarId, string> = {
@@ -101,36 +102,54 @@ export function buildDashboardData(
   hours: HoursResult,
   narrative: NarrativeResult,
   signals: Signal[],
+  context?: {
+    analysisFocus?: AnalysisFocus;
+    focusLabel?: string;
+    channelKpis?: ChannelKpi[];
+  },
 ) {
-  const kpis: DashboardKpi[] = [
-    {
-      label: "Señales evaluadas",
-      value: signals.length,
-      trend: "neutral",
-      icon: "signals",
-    },
-    {
-      label: "Puntaje global",
-      value: scores.globalScore,
-      suffix: "/100",
-      trend: scores.globalScore >= 60 ? "up" : "down",
-      icon: "score",
-    },
-    {
-      label: "Horas recuperables",
-      value: Math.round(hours.automatizable),
-      suffix: " h/mes",
-      trend: "up",
-      icon: "recover",
-    },
-    {
-      label: "Horas perdidas",
-      value: Math.round(hours.horasMes),
-      suffix: " h/mes",
-      trend: "down",
-      icon: "lost",
-    },
-  ];
+  const channelKpis = context?.channelKpis ?? [];
+  const analysisFocus = context?.analysisFocus ?? "operations";
+  const focusLabel = context?.focusLabel ?? "Diagnóstico digital";
+
+  const kpis: DashboardKpi[] =
+    channelKpis.length >= 2
+      ? channelKpis.slice(0, 4).map((kpi, i) => ({
+          label: kpi.label,
+          value: kpi.value ?? 0,
+          suffix: kpi.suffix,
+          trend: i % 2 === 0 ? ("up" as const) : ("neutral" as const),
+          icon: (["score", "signals", "recover", "lost"] as const)[i] ?? "score",
+        }))
+      : [
+          {
+            label: "Señales evaluadas",
+            value: signals.length,
+            trend: "neutral",
+            icon: "signals",
+          },
+          {
+            label: "Puntaje global",
+            value: scores.globalScore,
+            suffix: "/100",
+            trend: scores.globalScore >= 60 ? "up" : "down",
+            icon: "score",
+          },
+          {
+            label: "Horas recuperables",
+            value: Math.round(hours.automatizable),
+            suffix: " h/mes",
+            trend: "up",
+            icon: "recover",
+          },
+          {
+            label: "Horas perdidas",
+            value: Math.round(hours.horasMes),
+            suffix: " h/mes",
+            trend: "down",
+            icon: "lost",
+          },
+        ];
 
   const pillarBars: PillarBarRow[] = PILLAR_IDS.map((id) => {
     const p = scores.pillars[id];
@@ -260,6 +279,9 @@ export function buildDashboardData(
     headline: narrative.headline,
     summary: narrative.summary,
     quickWin: narrative.quickWin,
+    analysisFocus,
+    focusLabel,
+    channelKpis,
     kpis,
     pillarBars,
     pillarSlices,

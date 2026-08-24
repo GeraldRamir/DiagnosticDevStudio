@@ -5,53 +5,59 @@ import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
 
 export const metadata: Metadata = {
-  title: "Privacidad",
+  title: "Términos del servicio",
   description:
-    "Qué datos recogemos en el diagnóstico DevStudio, cómo se usan y qué información nunca se envía al motor de IA.",
+    "Condiciones de uso del diagnóstico digital DevStudio: qué ofrece el servicio, responsabilidades y limitaciones.",
 };
 
 const SECTIONS = [
   {
-    title: "Qué datos recogemos",
+    title: "Aceptación",
     body: [
-      "Datos del negocio: nombre, industria, país, tamaño del equipo, forma de registrar ventas, canales de contacto y la fricción operativa que declares.",
-      "Datos de contacto: nombre completo, correo electrónico y número de WhatsApp, necesarios para entregarte el reporte.",
-      "Datos técnicos: si indicas una URL, medimos señales públicas de ese sitio (velocidad, SEO, accesibilidad y adaptación a móvil).",
+      "Al usar el diagnóstico digital de DevStudio aceptas estos términos. Si no estás de acuerdo, no utilices el servicio.",
+      "El servicio está dirigido a dueños y responsables de negocios en Latinoamérica que desean evaluar su madurez digital.",
     ],
   },
   {
-    title: "Qué no se envía a la inteligencia artificial",
+    title: "Qué ofrece el servicio",
     body: [
-      "Tu nombre, correo electrónico y WhatsApp nunca viajan al motor de IA que redacta la narrativa del reporte.",
-      "El motor solo recibe las señales ya medidas y el contexto del negocio necesario para escribir los hallazgos. El puntaje se calcula antes, de forma determinística, y no depende del texto generado.",
+      "Analizamos señales públicas o autorizadas de tu presencia digital (sitio web, Instagram u otros datos que declares) y generamos un reporte con puntaje, hallazgos y recomendaciones orientativas.",
+      "El reporte es informativo. No constituye asesoría legal, contable ni garantía de resultados comerciales.",
+      "Las métricas de Instagram solo están disponibles si conectas tu cuenta y autorizas los permisos correspondientes.",
     ],
   },
   {
-    title: "Para qué usamos la información",
+    title: "Tu responsabilidad",
     body: [
-      "Generar tu reporte de madurez digital y alojarlo en una URL única y permanente.",
-      "Enviarte por correo el enlace del reporte.",
-      "Dar seguimiento comercial únicamente si nos lo solicitas.",
+      "Debes proporcionar información veraz sobre tu negocio y contar con autorización para analizar las URLs o cuentas que indiques.",
+      "Si conectas Instagram, confirmas que eres titular o administrador autorizado de esa cuenta profesional.",
+      "El enlace del reporte es privado pero accesible para quien lo tenga; compártelo solo con personas de confianza.",
     ],
   },
   {
-    title: "Conservación y acceso",
+    title: "Propiedad intelectual",
     body: [
-      "El reporte queda disponible en su URL mientras no solicites su eliminación. Cualquiera con el enlace puede verlo, así que compártelo solo con quien corresponda.",
-      "Puedes pedir la eliminación de tu diagnóstico y de tus datos de contacto escribiéndonos desde el mismo correo con el que lo generaste.",
+      "DevStudio conserva los derechos sobre la plataforma, el diseño del reporte y la metodología de medición.",
+      "Los datos de tu negocio y el contenido de tu sitio o perfil siguen siendo tuyos.",
     ],
   },
   {
-    title: "Terceros que intervienen",
+    title: "Limitación de responsabilidad",
     body: [
-      "Google PageSpeed Insights, para medir señales técnicas públicas del sitio que indiques.",
-      "Google Gemini, para redactar la lectura ejecutiva a partir de datos ya medidos.",
-      "Resend, para el envío del correo con el enlace del reporte.",
+      "El diagnóstico se entrega “tal cual”, en base a mediciones automatizadas en el momento del análisis. Las condiciones de tu sitio o redes pueden cambiar después.",
+      "DevStudio no se hace responsable por decisiones de negocio tomadas únicamente con base en el reporte.",
+    ],
+  },
+  {
+    title: "Modificaciones y contacto",
+    body: [
+      "Podemos actualizar estos términos. La fecha de la última revisión aparece al final de esta página.",
+      "Para consultas sobre el servicio puedes contactarnos por Instagram @dev_studioo o por el correo con el que generaste tu diagnóstico.",
     ],
   },
 ];
 
-export default function PrivacyPage() {
+export default function TermsPage() {
   return (
     <div className="lp-font min-h-screen bg-white">
       <SiteHeader />
@@ -67,11 +73,11 @@ export default function PrivacyPage() {
           </Link>
 
           <h1 className="mt-6 text-[clamp(2rem,5vw,3rem)] font-semibold leading-[1.06] tracking-[-0.03em] text-[#131316]">
-            Política de privacidad
+            Términos del servicio
           </h1>
           <p className="mt-4 text-[0.9375rem] leading-relaxed text-[#7b7b87]">
-            El diagnóstico existe para darte claridad, no para acumular datos. Aquí está, en
-            lenguaje simple, qué recogemos y qué hacemos con ello.
+            Condiciones de uso del diagnóstico digital DevStudio. Léelas antes de conectar tu
+            cuenta de Instagram o enviar tu información.
           </p>
 
           <div className="mt-10 space-y-3">
@@ -101,13 +107,13 @@ export default function PrivacyPage() {
           </div>
 
           <p className="mt-8 text-[0.875rem] text-[#7b7b87]">
-            Para solicitar eliminación de datos consulta{" "}
+            Consulta también nuestra{" "}
+            <Link href="/privacidad" className="font-semibold text-[#ee5b45] hover:underline">
+              política de privacidad
+            </Link>{" "}
+            y las{" "}
             <Link href="/eliminacion-datos" className="font-semibold text-[#ee5b45] hover:underline">
               instrucciones para eliminar datos
-            </Link>
-            . También aplican los{" "}
-            <Link href="/terminos" className="font-semibold text-[#ee5b45] hover:underline">
-              términos del servicio
             </Link>
             .
           </p>

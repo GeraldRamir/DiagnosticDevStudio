@@ -34,15 +34,23 @@ import {
 } from "@/components/report/report-ui";
 import type { DashboardData } from "@/lib/report-dashboard";
 import type { InstagramDashboardSummary } from "@/lib/analysis/instagram-bio";
+import type { WebsiteDashboardSummary } from "@/lib/analysis/website-dashboard";
+import type { AnalysisFocus, ChannelKpi } from "@/lib/report/analysis-focus";
 import type { ReportViewId } from "@/lib/report-view-model";
 import { InstagramProfileCard } from "@/components/report/views/instagram-profile-card";
+import { WebsiteProfileCard } from "@/components/report/views/website-profile-card";
 import { cn } from "@/lib/utils";
 
 type DashboardHomeViewProps = {
   data: DashboardData;
   slug: string;
   analysisStatus: string;
+  analysisFocus: AnalysisFocus;
+  focusLabel: string;
+  focusSubtitle: string;
   instagram: InstagramDashboardSummary | null;
+  website: WebsiteDashboardSummary | null;
+  channelKpis: ChannelKpi[];
   onNavigate: (view: ReportViewId) => void;
   onExportPdf: () => void;
   onCopyLink: () => void;
@@ -150,11 +158,65 @@ function FaceScale() {
   );
 }
 
+function ChannelMetricCard({
+  kpi,
+  pill,
+  delay,
+  onNavigate,
+  linkLabel,
+  linkView,
+}: {
+  kpi: ChannelKpi;
+  pill: string;
+  delay: number;
+  onNavigate?: (view: ReportViewId) => void;
+  linkLabel?: string;
+  linkView?: ReportViewId;
+}) {
+  return (
+    <Card className="group" delay={delay}>
+      <div className="flex items-center justify-between gap-3">
+        <IconBubble>
+          <BarChart3 className="size-4" />
+        </IconBubble>
+        <StaticPill label={pill} />
+      </div>
+      <div className="mt-5 flex items-end justify-between gap-3">
+        <div>
+          <p className="text-xs text-[#b0b0b0]">{kpi.label}</p>
+          <p className="mt-1 text-[1.75rem] font-bold leading-none tracking-tight text-[#131313]">
+            {kpi.display ? (
+              kpi.display
+            ) : kpi.value != null ? (
+              <>
+                <Counter value={kpi.value} delay={delay + 0.2} />
+                {kpi.suffix ? (
+                  <span className="text-lg font-semibold text-[#c9c9c9]">{kpi.suffix}</span>
+                ) : null}
+              </>
+            ) : (
+              <span className="text-lg text-[#c9c9c9]">—</span>
+            )}
+          </p>
+        </div>
+        {onNavigate && linkLabel && linkView ? (
+          <AccentLink label={linkLabel} onClick={() => onNavigate(linkView)} />
+        ) : null}
+      </div>
+    </Card>
+  );
+}
+
 export function DashboardHomeView({
   data,
   slug,
   analysisStatus,
+  analysisFocus,
+  focusLabel,
+  focusSubtitle,
   instagram,
+  website,
+  channelKpis,
   onNavigate,
   onExportPdf,
   onCopyLink,
@@ -162,6 +224,13 @@ export function DashboardHomeView({
   const [feedbackOpen, setFeedbackOpen] = useState(true);
   const statusCopy = STATUS_COPY[analysisStatus] ?? "Análisis registrado";
   const topPillars = data.pillarMeters.slice(0, 3);
+  const useChannelMetrics = channelKpis.length >= 2 && analysisFocus !== "operations";
+  const primaryKpi = channelKpis[0];
+  const secondaryKpi = channelKpis[1];
+  const showInstagramCardEarly = Boolean(instagram && analysisFocus === "instagram");
+  const showWebsiteCardEarly = Boolean(website && analysisFocus === "website");
+  const showInstagramCardLate = Boolean(instagram && analysisFocus === "hybrid");
+  const showWebsiteCardLate = Boolean(website && analysisFocus === "hybrid");
 
   return (
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-12">
@@ -172,10 +241,11 @@ export function DashboardHomeView({
             <p className="text-sm font-black uppercase tracking-[0.2em] text-[#131313]">
               DevStudio
             </p>
-            <StaticPill label="Diagnóstico" />
+            <StaticPill label={focusLabel} />
           </div>
 
-          <p className="mt-7 text-xs text-[#b0b0b0]">Informe emitido para {data.industry}</p>
+          <p className="mt-7 text-xs text-[#b0b0b0]">{focusSubtitle}</p>
+          <p className="mt-1 text-xs text-[#b0b0b0]">Informe · {data.industry}</p>
           <p className="mt-1 font-mono text-sm tracking-[0.2em] text-[#5c5c5c]">
             •••• {slug.slice(-4).toUpperCase()}
           </p>
@@ -202,42 +272,64 @@ export function DashboardHomeView({
         </div>
       </Card>
 
-      {/* ── Puntaje y horas ── */}
+      {/* ── Métricas del canal o puntaje global ── */}
       <div className="grid gap-3 md:col-span-2 xl:col-span-3">
-        <Card className="group" delay={0.08}>
-          <div className="flex items-center justify-between gap-3">
-            <IconBubble>
-              <Target className="size-4" />
-            </IconBubble>
-            <StaticPill label="Global" />
-          </div>
-          <div className="mt-5">
-            <p className="text-xs text-[#b0b0b0]">Puntaje global</p>
-            <p className="mt-1 text-[1.75rem] font-bold leading-none tracking-tight text-[#131313]">
-              <Counter value={data.globalScore} delay={0.35} />
-              <span className="text-lg font-semibold text-[#c9c9c9]">/100</span>
-            </p>
-          </div>
-        </Card>
-
-        <Card className="group" delay={0.16}>
-          <div className="flex items-center justify-between gap-3">
-            <IconBubble>
-              <Clock className="size-4" />
-            </IconBubble>
-            <StaticPill label="Mensual" />
-          </div>
-          <div className="mt-5 flex items-end justify-between gap-3">
-            <div>
-              <p className="text-xs text-[#b0b0b0]">Horas recuperables</p>
+        {useChannelMetrics && primaryKpi ? (
+          <ChannelMetricCard
+            kpi={primaryKpi}
+            pill={analysisFocus === "instagram" ? "Instagram" : analysisFocus === "website" ? "Web" : "Canal"}
+            delay={0.08}
+            onNavigate={onNavigate}
+            linkLabel={analysisFocus === "instagram" ? "Ver perfil" : "Ver hallazgos"}
+            linkView={analysisFocus === "instagram" ? "report" : "report"}
+          />
+        ) : (
+          <Card className="group" delay={0.08}>
+            <div className="flex items-center justify-between gap-3">
+              <IconBubble>
+                <Target className="size-4" />
+              </IconBubble>
+              <StaticPill label="Global" />
+            </div>
+            <div className="mt-5">
+              <p className="text-xs text-[#b0b0b0]">Puntaje global</p>
               <p className="mt-1 text-[1.75rem] font-bold leading-none tracking-tight text-[#131313]">
-                <Counter value={data.hoursRecoverable} delay={0.45} />
-                <span className="text-lg font-semibold text-[#c9c9c9]"> h</span>
+                <Counter value={data.globalScore} delay={0.35} />
+                <span className="text-lg font-semibold text-[#c9c9c9]">/100</span>
               </p>
             </div>
-            <AccentLink label="Ver sistemas" onClick={() => onNavigate("software")} />
-          </div>
-        </Card>
+          </Card>
+        )}
+
+        {useChannelMetrics && secondaryKpi ? (
+          <ChannelMetricCard
+            kpi={secondaryKpi}
+            pill="Métrica"
+            delay={0.16}
+            onNavigate={onNavigate}
+            linkLabel="Ver señales"
+            linkView="signals"
+          />
+        ) : (
+          <Card className="group" delay={0.16}>
+            <div className="flex items-center justify-between gap-3">
+              <IconBubble>
+                <Clock className="size-4" />
+              </IconBubble>
+              <StaticPill label="Mensual" />
+            </div>
+            <div className="mt-5 flex items-end justify-between gap-3">
+              <div>
+                <p className="text-xs text-[#b0b0b0]">Horas recuperables</p>
+                <p className="mt-1 text-[1.75rem] font-bold leading-none tracking-tight text-[#131313]">
+                  <Counter value={data.hoursRecoverable} delay={0.45} />
+                  <span className="text-lg font-semibold text-[#c9c9c9]"> h</span>
+                </p>
+              </div>
+              <AccentLink label="Ver sistemas" onClick={() => onNavigate("software")} />
+            </div>
+          </Card>
+        )}
       </div>
 
       {/* ── Estado + índice ── */}
@@ -302,6 +394,14 @@ export function DashboardHomeView({
           </div>
         </Card>
       </div>
+
+      {showInstagramCardEarly && instagram ? (
+        <InstagramProfileCard summary={instagram} delay={0.38} />
+      ) : null}
+
+      {showWebsiteCardEarly && website ? (
+        <WebsiteProfileCard summary={website} delay={0.38} />
+      ) : null}
 
       {/* ── Distribución por pilar ── */}
       <Card className="group md:col-span-2 xl:col-span-3" delay={0.64}>
@@ -445,7 +545,13 @@ export function DashboardHomeView({
         </div>
       </Card>
 
-      {instagram ? <InstagramProfileCard summary={instagram} delay={0.76} /> : null}
+      {showInstagramCardLate && instagram ? (
+        <InstagramProfileCard summary={instagram} delay={0.76} />
+      ) : null}
+
+      {showWebsiteCardLate && website ? (
+        <WebsiteProfileCard summary={website} delay={0.78} />
+      ) : null}
 
       {/* ── Percepción del negocio ── */}
       {feedbackOpen ? (

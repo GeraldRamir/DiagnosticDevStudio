@@ -167,6 +167,18 @@ export function SiteFooter() {
             >
               Privacidad
             </Link>
+            <Link
+              href="/terminos"
+              className="text-[0.75rem] text-[#8b8b96] transition-colors hover:text-[#131316]"
+            >
+              Términos
+            </Link>
+            <Link
+              href="/eliminacion-datos"
+              className="text-[0.75rem] text-[#8b8b96] transition-colors hover:text-[#131316]"
+            >
+              Eliminar datos
+            </Link>
             <a
               href={BRAND_LINKS.website}
               target="_blank"

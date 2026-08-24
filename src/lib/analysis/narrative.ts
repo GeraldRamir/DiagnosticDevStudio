@@ -1,6 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 import { generateFallbackNarrative } from "./fallback";
+import type { AnalysisFocus } from "@/lib/report/analysis-focus";
+import { FOCUS_NARRATIVE_HINTS, filterSignalsForFocus } from "@/lib/report/analysis-focus";
 import type {
   AnalysisStatus,
   HoursResult,
@@ -70,10 +72,15 @@ function anonymizedPayload(
   industry: string,
   country: string,
   biggestTimeWaster: string,
+  analysisFocus?: AnalysisFocus,
 ) {
   return {
     industry,
     country,
+    analysisFocus: analysisFocus ?? "operations",
+    focusInstruction: analysisFocus
+      ? FOCUS_NARRATIVE_HINTS[analysisFocus]
+      : FOCUS_NARRATIVE_HINTS.operations,
     scoreLabel: scores.scoreLabel,
     globalScore: scores.globalScore,
     pillars: Object.fromEntries(
@@ -249,6 +256,7 @@ export type GenerateNarrativeParams = {
   biggestTimeWaster: string;
   businessName: string;
   forcePartial?: boolean;
+  analysisFocus?: AnalysisFocus;
 };
 
 /**
@@ -260,9 +268,12 @@ export async function generateNarrative(
 ): Promise<NarrativeGenerationResult> {
   const enabled = process.env.AI_NARRATIVE_ENABLED !== "false";
 
+  const focus = params.analysisFocus ?? "operations";
+  const focusedSignals = filterSignalsForFocus(params.signals, focus);
+
   const fallback = (): NarrativeGenerationResult => {
     const raw = generateFallbackNarrative(
-      params.signals,
+      focusedSignals.length ? focusedSignals : params.signals,
       params.scores,
       params.hours,
     );
@@ -277,12 +288,13 @@ export async function generateNarrative(
   }
 
   const payload = anonymizedPayload(
-    params.signals,
+    focusedSignals.length ? focusedSignals : params.signals,
     params.scores,
     params.hours,
     params.industry,
     params.country,
     params.biggestTimeWaster,
+    focus,
   );
 
   try {
