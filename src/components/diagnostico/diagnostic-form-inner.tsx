@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -118,7 +118,7 @@ function FormInput({
   );
 }
 
-export function DiagnosticFormInner() {
+export function DiagnosticFormInner({ backHref = "/" }: { backHref?: string }) {
   const router = useRouter();
   const baseId = useId();
   const reduceMotion = useReducedMotion();
@@ -127,13 +127,6 @@ export function DiagnosticFormInner() {
   const [formId, setFormId] = useState("");
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [igOauth, setIgOauth] = useState<{
-    configured: boolean;
-    connected: boolean;
-    username: string | null;
-    followers: number | null;
-    redirectUri: string | null;
-  } | null>(null);
   const stepRef = useRef(step);
 
   const form = useForm<DiagnosticFormValues>({
@@ -166,62 +159,6 @@ export function DiagnosticFormInner() {
     }
     setFormId(createFormId());
   }, [form]);
-
-  const refreshIgOauth = useCallback(() => {
-    fetch("/api/instagram/oauth/me")
-      .then((res) => res.json())
-      .then(
-        (data: {
-          configured?: boolean;
-          connected?: boolean;
-          username?: string | null;
-          followers?: number | null;
-          redirectUri?: string | null;
-        }) => {
-          setIgOauth({
-            configured: Boolean(data.configured),
-            connected: Boolean(data.connected),
-            username: data.username ?? null,
-            followers: data.followers ?? null,
-            redirectUri: data.redirectUri ?? null,
-          });
-          if (data.connected && data.username) {
-            const current = getValues("instagramHandle");
-            if (!current?.trim()) {
-              setValue("instagramHandle", `@${data.username}`, { shouldValidate: true });
-            }
-          }
-        },
-      )
-      .catch(() => {
-        setIgOauth({
-          configured: false,
-          connected: false,
-          username: null,
-          followers: null,
-          redirectUri: null,
-        });
-      });
-  }, [getValues, setValue]);
-
-  useEffect(() => {
-    refreshIgOauth();
-  }, [refreshIgOauth]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const ig = params.get("ig");
-    if (!ig) return;
-
-    if (ig === "ok") {
-      toast.success("Instagram conectado. Mediremos alcance e interacciones reales.");
-      refreshIgOauth();
-    } else if (ig === "error") {
-      toast.error(copy.form.fields.instagramHandle.error);
-    }
-
-    window.history.replaceState({}, "", "/diagnostico");
-  }, [refreshIgOauth]);
 
   const displayFormId = formId || "······";
 
@@ -326,7 +263,7 @@ export function DiagnosticFormInner() {
       <div className="mx-auto w-full max-w-6xl">
       <header className="mb-8 border-b border-[#e2e8f0] pb-6">
         <Link
-          href="/"
+          href={backHref}
           className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-[#64748b] transition-colors hover:text-[#0f172a]"
         >
           <ArrowLeft className="size-3.5" />
@@ -365,7 +302,7 @@ export function DiagnosticFormInner() {
           <div className="overflow-hidden rounded-xl border border-[#e2e8f0] bg-white shadow-[0_4px_24px_rgba(15,23,42,0.05)]">
             <div className="border-b border-[#e2e8f0] bg-[#f8fafc] px-4 py-5 sm:px-8">
               <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-[#64748b]">
-                Secci├│n {step + 1} de 4
+                Sección {step + 1} de 4
               </p>
               <h2 className="mt-1 text-lg font-semibold text-[#0f172a]">{stepMeta.label}</h2>
               <p className="mt-1 text-sm text-[#64748b]">{stepMeta.description}</p>
@@ -468,50 +405,6 @@ export function DiagnosticFormInner() {
                             </motion.div>
                           ) : null}
                         </AnimatePresence>
-                        {hasWebsite === "social_only" || hasWebsite === "yes" ? (
-                          <>
-                            <FormInput
-                              id={`${baseId}-ig`}
-                              label={f.instagramHandle.label}
-                              placeholder={f.instagramHandle.placeholder}
-                              error={errors.instagramHandle?.message}
-                              {...register("instagramHandle")}
-                            />
-                            {igOauth?.configured ? (
-                              <div className="rounded-md border border-[#e2e8f0] bg-[#f8fafc] px-4 py-4">
-                                <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-[#94a3b8]">
-                                  Opcional
-                                </p>
-                                <p className="mt-1 text-xs leading-relaxed text-[#64748b]">
-                                  {f.instagramHandle.hint}
-                                </p>
-                                {igOauth.connected && igOauth.username ? (
-                                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                                    <p className="text-sm font-semibold text-[#0f172a]">
-                                      {f.instagramHandle.connected.replace(
-                                        "{username}",
-                                        igOauth.username,
-                                      )}
-                                      {igOauth.followers != null
-                                        ? ` · ${igOauth.followers.toLocaleString("es")} seguidores`
-                                        : ""}
-                                    </p>
-                                    <span className="rounded-full bg-[#dcfce7] px-2.5 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-[#166534]">
-                                      Insights reales
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <a
-                                    href="/api/instagram/oauth"
-                                    className="mt-3 inline-flex h-10 items-center rounded-full border border-[#cbd5e1] bg-white px-5 text-sm font-semibold text-[#0f172a] transition-colors hover:bg-[#f8fafc]"
-                                  >
-                                    {f.instagramHandle.connect}
-                                  </a>
-                                )}
-                              </div>
-                            ) : null}
-                          </>
-                        ) : null}
                       </>
                     ) : null}
 

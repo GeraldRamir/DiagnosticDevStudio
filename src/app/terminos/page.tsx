@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { SiteFooter } from "@/components/landing/site-footer";
-import { SiteHeader } from "@/components/landing/site-header";
+import { Footer } from "@/components/layout/footer";
+import { Navbar } from "@/components/layout/navbar";
 
 export const metadata: Metadata = {
   title: "Términos del servicio",
@@ -60,7 +60,7 @@ const SECTIONS = [
 export default function TermsPage() {
   return (
     <div className="lp-font min-h-screen bg-white">
-      <SiteHeader />
+      <Navbar />
 
       <main className="px-[clamp(1.25rem,4vw,3.75rem)] py-[clamp(2.5rem,5vw,4.5rem)]">
         <div className="mx-auto w-full max-w-3xl">
@@ -124,7 +124,7 @@ export default function TermsPage() {
         </div>
       </main>
 
-      <SiteFooter />
+      <Footer />
     </div>
   );
 }

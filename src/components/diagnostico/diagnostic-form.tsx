@@ -19,8 +19,12 @@ function DiagnosticFormSkeleton() {
   );
 }
 
+type DiagnosticFormProps = {
+  backHref?: string;
+};
+
 /** Client-only mount avoids hydration mismatches from extensions and localStorage drafts. */
-export function DiagnosticForm() {
+export function DiagnosticForm({ backHref = "/" }: DiagnosticFormProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -31,5 +35,5 @@ export function DiagnosticForm() {
     return <DiagnosticFormSkeleton />;
   }
 
-  return <DiagnosticFormInner />;
+  return <DiagnosticFormInner backHref={backHref} />;
 }

@@ -10,6 +10,8 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-display: var(--font-display);
+  --font-hero: var(--font-hero);
+  --font-inter: var(--font-inter);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-signal: var(--signal);
@@ -43,6 +45,10 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-landing-canvas: var(--landing-canvas);
+  --color-landing-lime: var(--landing-lime);
+  --color-landing-lime-ink: var(--landing-lime-ink);
+  --color-pixel-violet: var(--pixel-violet);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -65,15 +71,23 @@
 }
 
 :root {
-  /* Diagnóstico DevStudio — design tokens (see DESIGN.md) */
-  --ink: #0a1628;
-  --ink-2: #111f38;
+  /* Dev Studio Tools — brand tokens */
+  --brand: #90bf53;
+  --brand-foreground: #13200a;
+  --font-doodi: var(--font-sans);
+  --ink: #12131a;
+  --ink-2: #1c1e28;
   --signal: #2563eb;
   --flare: #ff6b2c;
-  --mist: #f5f7fa;
-  --slate: #7a8699;
-  --good: #0fa97f;
-  --warn: #f5a524;
+  --mist: #f3f1f8;
+  --slate: #5c6358;
+  --landing-canvas: #f3f1f8;
+  --landing-lime: #c8eb4a;
+  --landing-lime-ink: #16181a;
+  --pixel-violet: #8b7cff;
+  --pixel-violet-soft: #b7a9ff;
+  --good: #3d7a1f;
+  --warn: #c47b12;
 
   /* Landing v2 — referencia hero claro con gradiente exterior */
   --landing-gradient-from: #a855f7;
@@ -94,26 +108,26 @@
     var(--landing-gradient-to) 100%
   );
 
-  /* Report / admin (light mode default) */
-  --background: var(--mist);
+  /* Platform (light mode default) */
+  --background: var(--landing-canvas);
   --foreground: var(--ink);
   --card: #ffffff;
   --card-foreground: var(--ink);
   --popover: #ffffff;
   --popover-foreground: var(--ink);
-  --primary: var(--signal);
-  --primary-foreground: #ffffff;
-  --secondary: #e8ecf2;
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  --secondary: #ebe8f2;
   --secondary-foreground: var(--ink);
-  --muted: #e8ecf2;
+  --muted: #ebe8f2;
   --muted-foreground: var(--slate);
-  --accent: rgba(37, 99, 235, 0.08);
-  --accent-foreground: var(--signal);
+  --accent: rgba(144, 191, 83, 0.14);
+  --accent-foreground: #2f4a14;
   --destructive: #dc2626;
-  --border: rgba(10, 22, 40, 0.08);
-  --input: rgba(10, 22, 40, 0.12);
-  --ring: var(--signal);
-  --chart-1: var(--signal);
+  --border: rgba(18, 19, 26, 0.08);
+  --input: rgba(18, 19, 26, 0.12);
+  --ring: var(--brand);
+  --chart-1: var(--brand);
   --chart-2: var(--good);
   --chart-3: var(--warn);
   --chart-4: var(--flare);
@@ -121,12 +135,12 @@
   --radius: 0.75rem;
   --sidebar: #ffffff;
   --sidebar-foreground: var(--ink);
-  --sidebar-primary: var(--signal);
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: var(--brand-foreground);
   --sidebar-accent: var(--mist);
   --sidebar-accent-foreground: var(--ink);
-  --sidebar-border: rgba(10, 22, 40, 0.08);
-  --sidebar-ring: var(--signal);
+  --sidebar-border: rgba(18, 19, 26, 0.08);
+  --sidebar-ring: var(--brand);
 }
 
 @layer base {
@@ -135,9 +149,22 @@
   }
   body {
     @apply bg-background text-foreground;
+
+    /* Inter cubre todos los roles tipográficos de la interfaz. */
+    --font-sans: var(--font-inter);
+    --font-display: var(--font-inter);
+    --font-hero: var(--font-inter);
+    --font-landing: var(--font-inter);
+    --font-doodi: var(--font-inter);
   }
   html {
     @apply font-sans scroll-smooth;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.02em;
   }
 }
 
@@ -146,6 +173,17 @@
   width: 100%;
   max-width: 72rem;
   padding-inline: 1.25rem;
+}
+
+@utility dst-container {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 80rem;
+  padding-inline: clamp(1.25rem, 4vw, 2.75rem);
+}
+
+@utility dst-section {
+  padding-block: clamp(3.5rem, 8vw, 6rem);
 }
 
 @utility ds-pill {
@@ -682,5 +720,119 @@
 @media (prefers-reduced-motion: reduce) {
   .ds-logo-marquee {
     animation: none;
+  }
+}
+
+@keyframes dst-hero-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -8px, 0);
+  }
+}
+
+@keyframes dst-pixel-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@utility dst-hero-card {
+  animation: dst-hero-float 6.5s ease-in-out infinite;
+}
+
+@utility dst-hero-pixel {
+  animation: dst-pixel-bob 3.8s ease-in-out infinite;
+}
+
+@utility dst-lime-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 2.6rem;
+  padding-inline: 1.15rem 1rem;
+  border-radius: 9999px;
+  border: 1.5px solid #161616;
+  background: var(--landing-lime);
+  color: #161616;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  box-shadow: none;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease;
+
+  &:hover {
+    filter: brightness(0.97);
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+}
+
+@utility dst-mega {
+  border-radius: 2.5rem;
+  background: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dst-hero-card,
+  .dst-hero-pixel {
+    animation: none;
+  }
+}
+
+/* Transiciones suaves al cambiar entre herramientas (dock inferior) */
+@keyframes tools-stage-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tools-stage-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+::view-transition-old(tools-stage) {
+  animation: tools-stage-out 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+::view-transition-new(tools-stage) {
+  animation: tools-stage-in 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+::view-transition-old(tools-kit),
+::view-transition-new(tools-kit) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(tools-stage),
+  ::view-transition-new(tools-stage) {
+    animation-duration: 0.12s;
   }
 }
