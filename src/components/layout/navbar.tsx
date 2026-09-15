@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, ChevronDown, Menu, Search, X } from "lucide-react";
 import { TOOL_ICONS } from "@/components/tools/tool-icons";
 import { getToolTheme } from "@/components/tools/tool-theme";
-import { LOGO_SRC } from "@/lib/brand";
 import { NAV_ITEMS, type NavItem } from "@/lib/navigation";
 import { getAvailableTools, getCategoryLabel } from "@/lib/tools";
 import { cn } from "@/lib/utils";
@@ -38,18 +37,10 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-black/[0.06] bg-white/80 backdrop-blur-xl">
       <div className="dst-container grid h-[4.25rem] grid-cols-[1fr_auto] items-center md:grid-cols-[auto_1fr_auto]">
-        <Link href="/" className="flex min-w-0 items-center gap-2.5" aria-label="Dev Studio Tools">
-          <Image
-            src={LOGO_SRC}
-            alt="Dev Studio"
-            width={819}
-            height={1024}
-            priority
-            className="h-8 w-auto object-contain"
-            sizes="36px"
-          />
+        <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="Dev Studio Tools">
+          <BrandLogo priority className="h-10 w-auto sm:h-11" />
           <span className="flex min-w-0 items-baseline gap-2">
-            <span className="text-[0.92rem] font-semibold tracking-[-0.03em] text-foreground">
+            <span className="text-[0.95rem] font-semibold tracking-[-0.03em] text-foreground sm:text-[1rem]">
               Dev Studio
             </span>
             <span className="hidden text-[0.68rem] font-medium tracking-[0.12em] text-muted-foreground uppercase sm:inline">

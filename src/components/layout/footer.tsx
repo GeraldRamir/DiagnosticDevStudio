@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { FooterNav } from "@/components/layout/footer-nav";
 import { FooterSubscribe } from "@/components/layout/footer-subscribe";
 import { BRAND_LINKS } from "@/lib/brand";
@@ -68,9 +69,8 @@ export function Footer() {
       <div className="-mt-px bg-black text-white">
         <div className="dst-container grid grid-cols-1 gap-6 py-6 sm:grid-cols-3 sm:items-start sm:gap-8 sm:py-7">
           <div>
-            <Link href="/" className="inline-flex items-end gap-1.5" aria-label={SITE_BRAND}>
-              <span className="h-8 w-2.5 rounded-[2px] bg-white" />
-              <span className="h-8 w-2.5 rounded-[2px] border-2 border-white" />
+            <Link href="/" className="inline-flex" aria-label={SITE_BRAND}>
+              <BrandLogo variant="white" className="h-10 w-auto sm:h-11" />
             </Link>
             <p className="mt-4 max-w-[14rem] text-[0.75rem] leading-[1.5] text-white/40">
               Herramientas para un negocio moderno. Presencia, contacto y operación, con criterio
